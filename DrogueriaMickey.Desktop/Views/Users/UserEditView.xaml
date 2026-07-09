@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Users.UserEditView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel MaxWidth="400">
+        <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+
+        <TextBlock Text="Nombre completo"/>
+        <TextBox Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12" Padding="8"/>
+
+        <TextBlock Text="Documento" Visibility="{Binding IsCreateMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <TextBox Text="{Binding DocumentId, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12" Padding="8"
+                 Visibility="{Binding IsCreateMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+        <TextBlock Text="Usuario"/>
+        <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12" Padding="8"/>
+
+        <TextBlock Text="Contraseña temporal" Visibility="{Binding IsCreateMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <PasswordBox x:Name="TempPasswordBox" Margin="0,4,0,12" Padding="8"
+                     Visibility="{Binding IsCreateMode, Converter={StaticResource BoolToVisibilityConverter}}"
+                     PasswordChanged="TempPasswordBox_PasswordChanged"/>
+
+        <TextBlock Text="Rol"/>
+        <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}" DisplayMemberPath="Name" Margin="0,4,0,12" Padding="8"/>
+
+        <CheckBox Content="Activo" IsChecked="{Binding IsActive}"
+                  Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"
+                  Margin="0,0,0,12"/>
+
+        <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+        <Button Content="Guardar" Command="{Binding SaveCommand}" Background="{StaticResource PrimaryBrush}"
+                Foreground="White" Padding="0,10" BorderThickness="0" Cursor="Hand"/>
+    </StackPanel>
+</UserControl>
