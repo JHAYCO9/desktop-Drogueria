@@ -21,6 +21,9 @@
                     <TextBlock Text="{Binding RoleName, StringFormat=({0})}" Foreground="{StaticResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <TextBlock Text="⚠ Sin conexión" Foreground="Orange" VerticalAlignment="Center" Margin="0,0,12,0"
                                Visibility="{Binding IsOfflineSession, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+<Button Content="Cambiar contraseña" Command="{Binding NavigateToChangePasswordCommand}" Padding="8,4" Background="Transparent" Foreground="White" BorderThickness="0" Margin="0,0,8,0"/>
+
                     <Button Content="Cerrar sesión" Command="{Binding LogoutCommand}" Padding="10,4" Background="Transparent" Foreground="White" BorderThickness="1" BorderBrush="White"/>
                 </StackPanel>
             </Grid>
@@ -34,6 +37,8 @@
             <Button Content="Medicamentos" Command="{Binding NavigateToMedicinesCommand}" Style="{StaticResource MenuButtonStyle}"/>
             <Button Content="Usuarios" Command="{Binding NavigateToUsersCommand}" Style="{StaticResource MenuButtonStyle}"
                     Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+<Button Content="Auditoría" Command="{Binding NavigateToAuditLogCommand}" Style="{StaticResource MenuButtonStyle}"
+        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </StackPanel>
 
         <!-- Contenido -->

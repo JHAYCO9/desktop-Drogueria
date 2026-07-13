@@ -65,5 +65,33 @@ namespace DrogueriaMickey.Desktop.ViewModels.Users
             var view = new Views.Users.UserEditView { DataContext = vm };
             _navigation.NavigateTo(view);
         }
+
+        [RelayCommand]
+        private async Task ToggleActive(UserListItemDto user)
+        {
+            var action = user.IsActive ? "desactivar" : "activar";
+            var result = System.Windows.MessageBox.Show(
+                $"¿Seguro que quieres {action} a {user.FullName}?",
+                "Confirmar",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Question);
+
+            if (result != System.Windows.MessageBoxResult.Yes)
+                return;
+
+            IsBusy = true;
+            var apiResult = user.IsActive
+                ? await _userService.DeactivateUserAsync(user.Id)
+                : await _userService.ActivateUserAsync(user.Id);
+            IsBusy = false;
+
+            if (!apiResult.Success)
+            {
+                ErrorMessage = apiResult.ErrorMessage ?? $"No se pudo {action} el usuario";
+                return;
+            }
+
+            await LoadUsers();
+        }
     }
 }

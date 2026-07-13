@@ -35,7 +35,7 @@ namespace DrogueriaMickey.Desktop.ViewModels
             var view = new Views.Dashboard.DashboardView(); // sin ViewModel propio todavía, ok por ahora
             Navigation.NavigateTo(view);
         }
-
+            
         [RelayCommand]
         private void NavigateToUsers()
         {
@@ -76,6 +76,28 @@ namespace DrogueriaMickey.Desktop.ViewModels
         {
             await _authService.LogoutAsync();                        // <-- CAMBIO 3: llama al backend primero
             LoggedOut?.Invoke();
+        }
+
+
+        [RelayCommand]
+        private void NavigateToChangePassword()
+        {
+            var vm = _services.GetRequiredService<ViewModels.Auth.ChangePasswordViewModel>();
+            var view = new Views.Auth.ChangePasswordView { DataContext = vm };
+            Navigation.NavigateTo(view);
+        }
+
+        [RelayCommand]
+        private void NavigateToAuditLog()
+        {
+            if (!IsAdmin)
+            {
+                System.Windows.MessageBox.Show("No tienes permisos para acceder a este módulo.", "Acceso restringido");
+                return;
+            }
+            var vm = _services.GetRequiredService<ViewModels.Users.AuditLogViewModel>();
+            var view = new Views.Users.AuditLogView { DataContext = vm };
+            Navigation.NavigateTo(view);
         }
     }
 }

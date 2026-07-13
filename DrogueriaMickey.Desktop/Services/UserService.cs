@@ -14,6 +14,17 @@ namespace DrogueriaMickey.Desktop.Services
         public bool IsActive { get; set; }
     }
 
+    public class AuditLogDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string Action { get; set; } = string.Empty;
+        public string Detail { get; set; } = string.Empty;
+        public string IpAddress { get; set; } = string.Empty;
+        public string CreatedAt { get; set; } = string.Empty;
+    }
+
     public class RoleDto
     {
         public string Id { get; set; } = string.Empty;
@@ -114,6 +125,56 @@ namespace DrogueriaMickey.Desktop.Services
                 return $"Error {(int)response.StatusCode}";
             }
         }
+
+        public async Task<ApiResult<object>> DeactivateUserAsync(string id)
+        {
+            AttachToken();
+            var response = await _httpClient.PatchAsync($"users/{id}/deactivate", null);
+
+            if (!response.IsSuccessStatusCode)
+                return new ApiResult<object> { Success = false, ErrorMessage = await ReadError(response) };
+
+            return new ApiResult<object> { Success = true };
+        }
+
+        public async Task<ApiResult<object>> ActivateUserAsync(string id)
+        {
+            AttachToken();
+            var response = await _httpClient.PatchAsync($"users/{id}/activate", null);
+
+            if (!response.IsSuccessStatusCode)
+                return new ApiResult<object> { Success = false, ErrorMessage = await ReadError(response) };
+
+            return new ApiResult<object> { Success = true };
+        }
+
+        public async Task<ApiResult<object>> ChangePasswordAsync(string currentPassword, string newPassword, string confirmPassword)
+        {
+            AttachToken();
+            var response = await _httpClient.PutAsJsonAsync("users/change-password", new
+            {
+                current_password = currentPassword,
+                new_password = newPassword,
+                confirm_password = confirmPassword
+            }, JsonOptions.Default);
+
+            if (!response.IsSuccessStatusCode)
+                return new ApiResult<object> { Success = false, ErrorMessage = await ReadError(response) };
+
+            return new ApiResult<object> { Success = true };
+        }
+
+        public async Task<ApiResult<List<AuditLogDto>>> GetAuditLogsAsync()
+        {
+            AttachToken();
+            var response = await _httpClient.GetAsync("audit-logs");
+            if (!response.IsSuccessStatusCode)
+                return new ApiResult<List<AuditLogDto>> { Success = false, ErrorMessage = await ReadError(response) };
+
+            var data = await response.Content.ReadFromJsonAsync<List<AuditLogDto>>(JsonOptions.Default);
+            return new ApiResult<List<AuditLogDto>> { Success = true, Data = data };
+        }
+
 
         private class ErrorResponse
         {

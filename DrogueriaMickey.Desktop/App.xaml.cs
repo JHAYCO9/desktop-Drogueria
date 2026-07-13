@@ -16,6 +16,8 @@ namespace DrogueriaMickey.Desktop
 
             var services = new ServiceCollection();
 
+            services.AddTransient<ViewModels.Users.AuditLogViewModel>();
+            services.AddTransient<ViewModels.Auth.ChangePasswordViewModel>();
             services.AddSingleton<SessionService>();
             services.AddSingleton<Navigation.NavigationService>();
             services.AddDbContext<AppDbContext>();
