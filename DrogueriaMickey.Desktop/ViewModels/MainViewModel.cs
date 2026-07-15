@@ -53,7 +53,16 @@ namespace DrogueriaMickey.Desktop.ViewModels
         [RelayCommand]
         private void NavigateToMedicines()
         {
-            var view = new Views.Inventory.MedicinesListView();
+            var vm = _services.GetRequiredService<ViewModels.Inventory.MedicinesListViewModel>();
+            var view = new Views.Inventory.MedicinesListView { DataContext = vm };
+            Navigation.NavigateTo(view);
+        }
+
+        [RelayCommand]
+        private void NavigateToStockAlerts()
+        {
+            var vm = _services.GetRequiredService<ViewModels.Inventory.StockAlertsViewModel>();
+            var view = new Views.Inventory.StockAlertsView { DataContext = vm };
             Navigation.NavigateTo(view);
         }
 

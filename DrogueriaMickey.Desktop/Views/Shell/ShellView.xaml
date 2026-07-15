@@ -35,6 +35,7 @@
             <Button Content="Ventas" Command="{Binding NavigateToSalesCommand}" Style="{StaticResource MenuButtonStyle}"/>
             <Button Content="Caja" Command="{Binding NavigateToCashRegisterCommand}" Style="{StaticResource MenuButtonStyle}"/>
             <Button Content="Medicamentos" Command="{Binding NavigateToMedicinesCommand}" Style="{StaticResource MenuButtonStyle}"/>
+<Button Content="Alertas" Command="{Binding NavigateToStockAlertsCommand}" Style="{StaticResource MenuButtonStyle}"/>
             <Button Content="Usuarios" Command="{Binding NavigateToUsersCommand}" Style="{StaticResource MenuButtonStyle}"
                     Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
 <Button Content="Auditoría" Command="{Binding NavigateToAuditLogCommand}" Style="{StaticResource MenuButtonStyle}"

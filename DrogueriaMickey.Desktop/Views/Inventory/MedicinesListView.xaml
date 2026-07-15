@@ -1,11 +1,64 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Inventory.MedicinesListView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             mc:Ignorable="d"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             d:DesignHeight="450" d:DesignWidth="800">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBlock Text="Medicamentos" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+            <Button Content="+ Nuevo medicamento" Command="{Binding NewMedicineCommand}" Margin="20,0,0,0"
+                    Background="{StaticResource PrimaryBrush}" Foreground="White" Padding="12,6" BorderThickness="0" Cursor="Hand"/>
+        </StackPanel>
+
+        <!-- Escaneo por código de barras: RF-026/027 -->
+        <Border Grid.Row="1" Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Escanear código de barras:" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <TextBox x:Name="BarcodeBox"
+                 Text="{Binding BarcodeInput, UpdateSourceTrigger=PropertyChanged}"
+                 Width="250" Padding="8"
+                 KeyDown="BarcodeBox_KeyDown"/>
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                <Button Content="✕ Ver todos" Command="{Binding ClearFilterCommand}"
+                Visibility="{Binding IsFiltered, Converter={StaticResource BoolToVisibilityConverter}}"
+                Margin="16,0,0,0" Background="Transparent" BorderThickness="1" Padding="8,4" Cursor="Hand"/>
+            </StackPanel>
+        </Border>
+
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Medicines}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Header="Código de barras" Binding="{Binding Barcode}" Width="140"/>
+                <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Laboratorio" Binding="{Binding Laboratory}" Width="*"/>
+                <DataGridTextColumn Header="Presentación" Binding="{Binding Presentation}" Width="*"/>
+                <DataGridTextColumn Header="Stock mín." Binding="{Binding MinStock}" Width="80"/>
+
+                <DataGridTemplateColumn Header="" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Ver lotes"
+                            Command="{Binding DataContext.ViewBatchesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                            CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="" Width="140">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Config. alerta"
+                    Command="{Binding DataContext.ConfigureAlertCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                    CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>

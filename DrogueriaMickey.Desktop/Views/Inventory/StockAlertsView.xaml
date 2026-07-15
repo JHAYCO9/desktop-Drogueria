@@ -1,11 +1,44 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Inventory.StockAlertsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             mc:Ignorable="d"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <TextBlock Text="Alertas de inventario" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
 
-    </Grid>
+            <!-- RF-021 -->
+            <TextBlock Text="Medicamentos con stock crítico" FontWeight="SemiBold" Foreground="{StaticResource ErrorBrush}" Margin="0,0,0,8"/>
+            <DataGrid ItemsSource="{Binding CriticalMedicines}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="200" Margin="0,0,0,20">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Medicamento" Binding="{Binding Medicine.Name}" Width="*"/>
+                    <DataGridTextColumn Header="Stock actual" Binding="{Binding CurrentStock}" Width="100"/>
+                    <DataGridTextColumn Header="Stock mínimo" Binding="{Binding MinStock}" Width="100"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- RF-023 -->
+            <TextBlock Text="Próximos a vencer (30 días)" FontWeight="SemiBold" Foreground="#D97706" Margin="0,0,0,8"/>
+            <DataGrid ItemsSource="{Binding ExpiringSoon}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="200" Margin="0,0,0,20">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="*"/>
+                    <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="*"/>
+                    <DataGridTextColumn Header="Vencimiento" Binding="{Binding ExpirationDate}" Width="120"/>
+                    <DataGridTextColumn Header="Días restantes" Binding="{Binding DaysRemaining}" Width="110"/>
+                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="90"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- RF-024 -->
+            <TextBlock Text="Vencidos" FontWeight="SemiBold" Foreground="{StaticResource ErrorBrush}" Margin="0,0,0,8"/>
+            <DataGrid ItemsSource="{Binding Expired}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="200">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="*"/>
+                    <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="*"/>
+                    <DataGridTextColumn Header="Vencimiento" Binding="{Binding ExpirationDate}" Width="120"/>
+                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="90"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" Margin="0,16,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

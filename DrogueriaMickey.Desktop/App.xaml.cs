@@ -16,6 +16,11 @@ namespace DrogueriaMickey.Desktop
 
             var services = new ServiceCollection();
 
+            services.AddTransient<ViewModels.Inventory.StockAlertsViewModel>();
+            services.AddTransient<ViewModels.Inventory.BatchesViewModel>();
+            services.AddHttpClient<MedicineService>();
+            services.AddTransient<ViewModels.Inventory.MedicinesListViewModel>();
+            services.AddTransient<ViewModels.Inventory.MedicineEditViewModel>();
             services.AddTransient<ViewModels.Users.AuditLogViewModel>();
             services.AddTransient<ViewModels.Auth.ChangePasswordViewModel>();
             services.AddSingleton<SessionService>();

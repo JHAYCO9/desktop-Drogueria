@@ -1,11 +1,72 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Inventory.BatchesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             mc:Ignorable="d"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             d:DesignHeight="450" d:DesignWidth="800">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
+        <TextBlock Grid.Row="0" FontSize="20" FontWeight="Bold" Margin="0,0,0,16">
+            <Run Text="Lotes de "/><Run Text="{Binding MedicineName}"/>
+        </TextBlock>
+
+        <!-- RF-015: registrar lote -->
+        <Border Grid.Row="1" Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="Registrar nuevo lote" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Width="120" Margin="0,0,8,0">
+                        <TextBlock Text="Cantidad" FontSize="11"/>
+                        <TextBox Text="{Binding NewBatchQuantity, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+                    </StackPanel>
+                    <StackPanel Width="140" Margin="0,0,8,0">
+                        <TextBlock Text="Fecha ingreso" FontSize="11"/>
+                        <TextBox Text="{Binding NewBatchReceivedAt, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+                    </StackPanel>
+                    <StackPanel Width="140" Margin="0,0,8,0">
+                        <TextBlock Text="Fecha vencimiento" FontSize="11"/>
+                        <TextBox Text="{Binding NewBatchExpirationDate, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+                    </StackPanel>
+                    <Button Content="Registrar lote" Command="{Binding RegisterBatchCommand}"
+                            Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                            Padding="12,0" VerticalAlignment="Bottom" Height="30" Cursor="Hand"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- RF-016: registrar ingreso a un lote existente -->
+        <Border Grid.Row="2" Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="Registrar ingreso a un lote existente" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox Width="220" ItemsSource="{Binding Batches}" SelectedItem="{Binding SelectedBatchForIngreso}"
+                              DisplayMemberPath="BatchCode" Margin="0,0,8,0" Padding="6"/>
+                    <StackPanel Width="120" Margin="0,0,8,0">
+                        <TextBlock Text="Cantidad" FontSize="11"/>
+                        <TextBox Text="{Binding IngresoQuantity, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+                    </StackPanel>
+                    <Button Content="Registrar ingreso" Command="{Binding RegisterIngresoCommand}"
+                            Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                            Padding="12,0" VerticalAlignment="Bottom" Height="30" Cursor="Hand"/>
+                </StackPanel>
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding SuccessMessage}" Foreground="Green" Margin="0,8,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- RF-018: lista de lotes con estado -->
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Batches}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="160"/>
+                <DataGridTextColumn Header="Fecha ingreso" Binding="{Binding ReceivedAt}" Width="120"/>
+                <DataGridTextColumn Header="Vencimiento" Binding="{Binding ExpirationDate}" Width="120"/>
+                <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="90"/>
+                <DataGridTextColumn Header="Días restantes" Binding="{Binding DaysRemaining}" Width="110"/>
+                <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>
