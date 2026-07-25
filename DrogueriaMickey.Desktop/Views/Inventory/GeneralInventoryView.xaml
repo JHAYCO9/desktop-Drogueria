@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Inventory.GeneralInventoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <TextBlock Text="Inventario general" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+
+            <DataGrid ItemsSource="{Binding GeneralItems}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="280" Margin="0,0,0,24">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Código" Binding="{Binding Barcode}" Width="110"/>
+                    <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*"/>
+                    <DataGridTextColumn Header="Laboratorio" Binding="{Binding Laboratory}" Width="*"/>
+                    <DataGridTextColumn Header="Stock total" Binding="{Binding TotalStock}" Width="90"/>
+                    <DataGridTextColumn Header="Stock mín." Binding="{Binding MinStock}" Width="90"/>
+                    <DataGridTextColumn Header="Lotes" Binding="{Binding AvailableBatches}" Width="70"/>
+                    <DataGridTextColumn Header="Próx. vencim." Binding="{Binding NextExpiration}" Width="110"/>
+                    <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="90"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Text="⚠ Medicamentos críticos" FontSize="16" FontWeight="Bold" Foreground="{StaticResource ErrorBrush}" Margin="0,0,0,8"/>
+            <DataGrid ItemsSource="{Binding CriticalItems}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="280">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*"/>
+                    <DataGridTextColumn Header="Stock actual" Binding="{Binding TotalStock}" Width="90"/>
+                    <DataGridTextColumn Header="Stock mín." Binding="{Binding MinStock}" Width="90"/>
+                    <DataGridTextColumn Header="Motivos" Binding="{Binding Reasons}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" Margin="0,16,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -10,7 +10,7 @@ namespace DrogueriaMickey.Desktop.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=drogueria_micky.db");
+            optionsBuilder.UseSqlite("Data Source=drogueria_micky.db;Cache=Shared");
         }
     }
 }

@@ -38,6 +38,17 @@
                 </DataGrid.Columns>
             </DataGrid>
 
+            <!-- RF-029: inventario crítico detallado, con motivos -->
+            <TextBlock Text="Inventario crítico (detalle con motivos)" FontWeight="SemiBold" Foreground="{StaticResource PrimaryDarkBrush}" Margin="0,20,0,8"/>
+            <DataGrid ItemsSource="{Binding CriticalInventory}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="200">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Medicamento" Binding="{Binding Name}" Width="*"/>
+                    <DataGridTextColumn Header="Stock actual" Binding="{Binding TotalStock}" Width="90"/>
+                    <DataGridTextColumn Header="Stock mínimo" Binding="{Binding MinStock}" Width="90"/>
+                    <DataGridTextColumn Header="Motivos" Binding="{Binding Reasons}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" Margin="0,16,0,0"/>
         </StackPanel>
     </ScrollViewer>

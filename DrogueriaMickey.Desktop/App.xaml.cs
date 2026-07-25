@@ -14,8 +14,39 @@ namespace DrogueriaMickey.Desktop
         {
             base.OnStartup(e);
 
+            // Red de seguridad: cualquier excepción no atrapada en cualquier
+            // parte de la app se captura aquí, se muestra un mensaje, y la
+            // aplicación sigue viva en vez de cerrarse de golpe.
+            DispatcherUnhandledException += (s, args) =>
+            {
+                System.Windows.MessageBox.Show(
+                    $"Ocurrió un error inesperado:\n\n{args.Exception.Message}\n\nLa aplicación continuará funcionando.",
+                    "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                args.Handled = true; // evita que la app se cierre
+            };
+
+            AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+            {
+                var ex = args.ExceptionObject as Exception;
+                System.Windows.MessageBox.Show(
+                    $"Error crítico: {ex?.Message}",
+                    "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            };
+
+            TaskScheduler.UnobservedTaskException += (s, args) =>
+            {
+                args.SetObserved(); // evita que una excepción de una Task en segundo plano tumbe el proceso
+            };
+
             var services = new ServiceCollection();
 
+            services.AddHttpClient<SaleService>();
+            services.AddSingleton<ReceiptPrintService>();
+            services.AddSingleton<CashDrawerService>();
+            services.AddTransient<ViewModels.Sales.SalePosViewModel>();
+            services.AddTransient<ViewModels.Inventory.MedicineSearchViewModel>();
+            services.AddTransient<ViewModels.Inventory.InventoryMovementsViewModel>();
+            services.AddTransient<ViewModels.Inventory.GeneralInventoryViewModel>();
             services.AddTransient<ViewModels.Inventory.StockAlertsViewModel>();
             services.AddTransient<ViewModels.Inventory.BatchesViewModel>();
             services.AddHttpClient<MedicineService>();
@@ -25,14 +56,14 @@ namespace DrogueriaMickey.Desktop
             services.AddTransient<ViewModels.Auth.ChangePasswordViewModel>();
             services.AddSingleton<SessionService>();
             services.AddSingleton<Navigation.NavigationService>();
-            services.AddDbContext<AppDbContext>();
-            services.AddHttpClient<AuthService>();
+            services.AddDbContext<AppDbContext>(contextLifetime: ServiceLifetime.Transient, optionsLifetime: ServiceLifetime.Transient); services.AddHttpClient<AuthService>();
             services.AddSingleton<SyncService>();
             services.AddTransient<ViewModels.Auth.LoginViewModel>();
             services.AddTransient<ViewModels.MainViewModel>();
             services.AddHttpClient<UserService>();
             services.AddTransient<ViewModels.Users.UsersListViewModel>();
             services.AddTransient<ViewModels.Users.UserEditViewModel>();
+            services.AddSingleton<ReceiptPrintService>();
 
             ServiceProvider = services.BuildServiceProvider();
 
@@ -40,6 +71,8 @@ namespace DrogueriaMickey.Desktop
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 db.Database.Migrate();
+                db.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
+                db.Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;"); // espera hasta 5s si hay un lock, en vez de fallar de inmediato
             }
 
             var mainWindow = new MainWindow();

@@ -17,6 +17,7 @@
             <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1E293B"/>
             <SolidColorBrush x:Key="TextMutedBrush" Color="#64748B"/>
             <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
             <conv:ActiveToLabelConverter x:Key="ActiveToLabelConverter"/>
         </ResourceDictionary>
     </Application.Resources>

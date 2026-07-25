@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using System;
 
 namespace DrogueriaMickey.Desktop.Services
 {
@@ -17,8 +18,15 @@ namespace DrogueriaMickey.Desktop.Services
         public decimal PricePerSeal { get; set; }
         public decimal PricePerBox { get; set; }
         public int MinStock { get; set; }
+        public bool HasIva { get; set; }
+
         public bool IsActive { get; set; }
         public string CreatedAt { get; set; } = string.Empty;
+
+        public int TotalStock { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string NextExpiration { get; set; } = string.Empty;
+        public int AvailableBatches { get; set; }
     }
 
     public class BatchDto
@@ -35,6 +43,51 @@ namespace DrogueriaMickey.Desktop.Services
         public int DaysRemaining { get; set; }
     }
 
+    public class MedicineSearchDto : MedicineDto
+    {
+        public int TotalStock { get; set; }
+    }
+
+    public class InventoryMovementDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string MedicineId { get; set; } = string.Empty;
+        public string MedicineName { get; set; } = string.Empty;
+        public string BatchId { get; set; } = string.Empty;
+        public string BatchCode { get; set; } = string.Empty;
+        public string MovementType { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public string Reason { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string CreatedAt { get; set; } = string.Empty;
+    }
+
+    public class InventoryGeneralItemDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Barcode { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Laboratory { get; set; } = string.Empty;
+        public int TotalStock { get; set; }
+        public int MinStock { get; set; }
+        public bool IsActive { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string NextExpiration { get; set; } = string.Empty;
+        public int AvailableBatches { get; set; }
+    }
+
+    public class CriticalInventoryItemDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Barcode { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Laboratory { get; set; } = string.Empty;
+        public int TotalStock { get; set; }
+        public int MinStock { get; set; }
+        public bool IsActive { get; set; }
+        public List<string> Reasons { get; set; } = new();
+    }
+
     public class CriticalMedicineDto
     {
         public MedicineDto Medicine { get; set; } = new();
@@ -48,6 +101,8 @@ namespace DrogueriaMickey.Desktop.Services
         private readonly HttpClient _httpClient;
         private readonly SessionService _session;
 
+        private const string ConnectionErrorMessage = "No se pudo conectar con el servidor";
+
         public MedicineService(HttpClient httpClient, SessionService session)
         {
             _httpClient = httpClient;
@@ -59,6 +114,140 @@ namespace DrogueriaMickey.Desktop.Services
         {
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", _session.Token);
+        }
+
+        // RF-012
+        public async Task<ApiResult<object>> UpdateMedicineAsync(string id, string name, string presentation, string concentration,
+            decimal pricePerPill, decimal pricePerSeal, decimal pricePerBox, int minStock, bool hasIva)
+        {
+            try
+            {
+                AttachToken();
+                var response = await _httpClient.PutAsJsonAsync($"medicines/{id}", new
+                {
+                    name,
+                    presentation,
+                    concentration,
+                    price_per_pill = pricePerPill,
+                    price_per_seal = pricePerSeal,
+                    price_per_box = pricePerBox,
+                    min_stock = minStock,
+                    has_iva = hasIva
+                }, JsonOptions.Default);
+
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<object> { Success = false, ErrorMessage = await ReadError(response) };
+
+                return new ApiResult<object> { Success = true };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<object> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
+        }
+
+        // RF-013
+        public async Task<ApiResult<object>> DeactivateMedicineAsync(string id) => await PatchNoBody($"medicines/{id}/deactivate");
+        public async Task<ApiResult<object>> ActivateMedicineAsync(string id) => await PatchNoBody($"medicines/{id}/activate");
+
+        private async Task<ApiResult<object>> PatchNoBody(string url)
+        {
+            AttachToken();
+            var request = new HttpRequestMessage(HttpMethod.Patch, url);
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+                return new ApiResult<object> { Success = false, ErrorMessage = await ReadError(response) };
+
+            return new ApiResult<object> { Success = true };
+        }
+
+        public async Task<ApiResult<object>> RegisterAdjustmentAsync(string medicineId, string batchId, int newQuantity, string reason)
+{
+    AttachToken();
+    var response = await _httpClient.PostAsJsonAsync("inventory/adjustments", new
+    {
+        medicine_id = medicineId,
+        batch_id = batchId,
+        new_quantity = newQuantity,
+        reason
+    }, JsonOptions.Default);
+
+    if (!response.IsSuccessStatusCode)
+        return new ApiResult<object> { Success = false, ErrorMessage = await ReadError(response) };
+
+    return new ApiResult<object> { Success = true };
+}
+
+        // RF-014
+        public async Task<ApiResult<List<MedicineSearchDto>>> SearchMedicinesAsync(string? name = null, string? barcode = null, string? laboratory = null)
+        {
+            AttachToken();
+            var query = new List<string>();
+            if (!string.IsNullOrWhiteSpace(name)) query.Add($"nombre={Uri.EscapeDataString(name)}");
+            if (!string.IsNullOrWhiteSpace(barcode)) query.Add($"codigo_barras={Uri.EscapeDataString(barcode)}");
+            if (!string.IsNullOrWhiteSpace(laboratory)) query.Add($"laboratorio={Uri.EscapeDataString(laboratory)}");
+            var queryString = query.Count > 0 ? "?" + string.Join("&", query) : "";
+
+            var response = await _httpClient.GetAsync($"medicines/search{queryString}");
+            if (!response.IsSuccessStatusCode)
+                return new ApiResult<List<MedicineSearchDto>> { Success = false, ErrorMessage = await ReadError(response) };
+
+            var data = await response.Content.ReadFromJsonAsync<List<MedicineSearchDto>>(JsonOptions.Default);
+            return new ApiResult<List<MedicineSearchDto>> { Success = true, Data = data };
+        }
+
+        // RF-019
+        public async Task<ApiResult<List<InventoryMovementDto>>> ListMovementsAsync()
+        {
+            AttachToken();
+            var response = await _httpClient.GetAsync("inventory/movements");
+            if (!response.IsSuccessStatusCode)
+                return new ApiResult<List<InventoryMovementDto>> { Success = false, ErrorMessage = await ReadError(response) };
+
+            var data = await response.Content.ReadFromJsonAsync<List<InventoryMovementDto>>(JsonOptions.Default);
+            return new ApiResult<List<InventoryMovementDto>> { Success = true, Data = data };
+        }
+
+        // RF-030
+        public async Task<ApiResult<List<InventoryMovementDto>>> GetStockHistoryAsync(string? from = null, string? to = null)
+        {
+            AttachToken();
+            var query = new List<string>();
+            if (!string.IsNullOrWhiteSpace(from)) query.Add($"desde={from}");
+            if (!string.IsNullOrWhiteSpace(to)) query.Add($"hasta={to}");
+            var queryString = query.Count > 0 ? "?" + string.Join("&", query) : "";
+
+            var response = await _httpClient.GetAsync($"inventory/stock-history{queryString}");
+            if (!response.IsSuccessStatusCode)
+                return new ApiResult<List<InventoryMovementDto>> { Success = false, ErrorMessage = await ReadError(response) };
+
+            var data = await response.Content.ReadFromJsonAsync<List<InventoryMovementDto>>(JsonOptions.Default);
+            return new ApiResult<List<InventoryMovementDto>> { Success = true, Data = data };
+        }
+
+        // RF-028
+        public async Task<ApiResult<List<InventoryGeneralItemDto>>> GetGeneralInventoryAsync()
+        {
+            AttachToken();
+            var response = await _httpClient.GetAsync("inventory/general");
+            if (!response.IsSuccessStatusCode)
+                return new ApiResult<List<InventoryGeneralItemDto>> { Success = false, ErrorMessage = await ReadError(response) };
+
+            var data = await response.Content.ReadFromJsonAsync<List<InventoryGeneralItemDto>>(JsonOptions.Default);
+            return new ApiResult<List<InventoryGeneralItemDto>> { Success = true, Data = data };
+        }
+
+        // RF-029
+        public async Task<ApiResult<List<CriticalInventoryItemDto>>> GetCriticalInventoryAsync()
+        {
+            AttachToken();
+            var response = await _httpClient.GetAsync("inventory/critical");
+            if (!response.IsSuccessStatusCode)
+                return new ApiResult<List<CriticalInventoryItemDto>> { Success = false, ErrorMessage = await ReadError(response) };
+
+            var data = await response.Content.ReadFromJsonAsync<List<CriticalInventoryItemDto>>(JsonOptions.Default);
+            return new ApiResult<List<CriticalInventoryItemDto>> { Success = true, Data = data };
         }
 
         // RF-015
@@ -192,26 +381,34 @@ namespace DrogueriaMickey.Desktop.Services
 
         public async Task<ApiResult<object>> RegisterMedicineAsync(
             string barcode, string name, string laboratory, string concentration, string presentation,
-            decimal pricePerPill, decimal pricePerSeal, decimal pricePerBox, int minStock)
+            decimal pricePerPill, decimal pricePerSeal, decimal pricePerBox, int minStock, bool hasIva)
         {
-            AttachToken();
-            var response = await _httpClient.PostAsJsonAsync("medicines", new
+            try
             {
-                barcode,
-                name,
-                laboratory,
-                concentration,
-                presentation,
-                price_per_pill = pricePerPill,
-                price_per_seal = pricePerSeal,
-                price_per_box = pricePerBox,
-                min_stock = minStock
-            }, JsonOptions.Default);
+                AttachToken();
+                var response = await _httpClient.PostAsJsonAsync("medicines", new
+                {
+                    barcode,
+                    name,
+                    laboratory,
+                    concentration,
+                    presentation,
+                    price_per_pill = pricePerPill,
+                    price_per_seal = pricePerSeal,
+                    price_per_box = pricePerBox,
+                    min_stock = minStock,
+                    has_iva = hasIva
+                }, JsonOptions.Default);
 
-            if (!response.IsSuccessStatusCode)
-                return new ApiResult<object> { Success = false, ErrorMessage = await ReadError(response) };
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<object> { Success = false, ErrorMessage = await ReadError(response) };
 
-            return new ApiResult<object> { Success = true };
+                return new ApiResult<object> { Success = true };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<object> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
         }
 
         public async Task<ApiResult<object>> UpdateMinStockAsync(string medicineId, int minStock)

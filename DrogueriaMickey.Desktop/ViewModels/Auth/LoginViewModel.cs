@@ -48,25 +48,37 @@ namespace DrogueriaMickey.Desktop.ViewModels.Auth
             IsBusy = true;
             OnPropertyChanged(nameof(IsNotBusy));
 
-            var result = await _authService.LoginAsync(Username, Password);
-
-            IsBusy = false;
-            OnPropertyChanged(nameof(IsNotBusy));
-
-            if (!result.Success)
+            try
             {
-                ErrorMessage = result.ErrorMessage ?? "Usuario o contraseña incorrectos";
-                OnPropertyChanged(nameof(HasError));
-                return;
-            }
+                var result = await _authService.LoginAsync(Username, Password);
 
-            if (result.WasOffline)
+                if (!result.Success)
+                {
+                    ErrorMessage = result.ErrorMessage ?? "Usuario o contraseña incorrectos";
+                    OnPropertyChanged(nameof(HasError));
+                    return;
+                }
+
+                if (result.WasOffline)
+                {
+                    ErrorMessage = "Conectado en modo sin conexión — los cambios se sincronizarán cuando vuelva la red";
+                    OnPropertyChanged(nameof(HasError));
+                }
+
+                LoginSucceeded?.Invoke();
+            }
+            catch (Exception ex)
             {
-                ErrorMessage = "Conectado en modo sin conexión — los cambios se sincronizarán cuando vuelva la red";
+                // Con esto, si algo similar vuelve a pasar, al menos verás el
+                // error real en vez de que la app se quede "colgada" en silencio.
+                ErrorMessage = $"Error inesperado: {ex.Message}";
                 OnPropertyChanged(nameof(HasError));
             }
-
-            LoginSucceeded?.Invoke();
+            finally
+            {
+                IsBusy = false;
+                OnPropertyChanged(nameof(IsNotBusy));
+            }
         }
     }
 }

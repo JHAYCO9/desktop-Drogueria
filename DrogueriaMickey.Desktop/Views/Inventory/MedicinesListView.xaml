@@ -5,59 +5,88 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-            <TextBlock Text="Medicamentos" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBlock Text="Inventario de Medicamentos" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
             <Button Content="+ Nuevo medicamento" Command="{Binding NewMedicineCommand}" Margin="20,0,0,0"
-                    Background="{StaticResource PrimaryBrush}" Foreground="White" Padding="12,6" BorderThickness="0" Cursor="Hand"/>
+                    Background="{StaticResource PrimaryBrush}" Foreground="White" Padding="12,6" BorderThickness="0" Cursor="Hand"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <Button Content="Movimientos de inventario" Command="{Binding ViewMovementsCommand}" Margin="8,0,0,0"
+        Background="Transparent" BorderThickness="1" Padding="12,6" Cursor="Hand"
+        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </StackPanel>
 
-        <!-- Escaneo por código de barras: RF-026/027 -->
-        <Border Grid.Row="1" Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8" Margin="0,0,0,16">
+        <Border Grid.Row="1" Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8" Margin="0,0,0,10">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Escanear código de barras:" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                <TextBox x:Name="BarcodeBox"
-                 Text="{Binding BarcodeInput, UpdateSourceTrigger=PropertyChanged}"
-                 Width="250" Padding="8"
-                 KeyDown="BarcodeBox_KeyDown"/>
-                <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" VerticalAlignment="Center" Margin="16,0,0,0"/>
-                <Button Content="✕ Ver todos" Command="{Binding ClearFilterCommand}"
-                Visibility="{Binding IsFiltered, Converter={StaticResource BoolToVisibilityConverter}}"
-                Margin="16,0,0,0" Background="Transparent" BorderThickness="1" Padding="8,4" Cursor="Hand"/>
+                <StackPanel Width="200" Margin="0,0,8,0">
+                    <TextBlock Text="Filtrar por nombre" FontSize="11"/>
+                    <TextBox Text="{Binding FilterName, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+                </StackPanel>
+                <StackPanel Width="200" Margin="0,0,8,0">
+                    <TextBlock Text="Filtrar por laboratorio" FontSize="11"/>
+                    <TextBox Text="{Binding FilterLaboratory, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+                </StackPanel>
             </StackPanel>
         </Border>
 
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Medicines}" AutoGenerateColumns="False" IsReadOnly="True">
-            <DataGrid.Columns>
+        <Border Grid.Row="2" Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Escanear código de barras:" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <TextBox x:Name="BarcodeBox"
+                         Text="{Binding BarcodeInput, UpdateSourceTrigger=PropertyChanged}"
+                         Width="250" Padding="8"
+                         KeyDown="BarcodeBox_KeyDown"/>
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                <Button Content="✕ Ver todos" Command="{Binding ClearFilterCommand}"
+                        Visibility="{Binding IsFiltered, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Margin="16,0,0,0" Background="Transparent" BorderThickness="1" Padding="8,4" Cursor="Hand"/>
+            </StackPanel>
+        </Border>
 
-                <DataGridTextColumn Header="Código de barras" Binding="{Binding Barcode}" Width="140"/>
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Medicines}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Código" Binding="{Binding Barcode}" Width="110"/>
                 <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*"/>
                 <DataGridTextColumn Header="Laboratorio" Binding="{Binding Laboratory}" Width="*"/>
-                <DataGridTextColumn Header="Presentación" Binding="{Binding Presentation}" Width="*"/>
+                <DataGridTextColumn Header="Stock" Binding="{Binding TotalStock}" Width="70"/>
                 <DataGridTextColumn Header="Stock mín." Binding="{Binding MinStock}" Width="80"/>
-
-                <DataGridTemplateColumn Header="" Width="100">
+                <DataGridTextColumn Header="IVA" Binding="{Binding HasIva}" Width="50"/>
+                <DataGridTextColumn Header="Lotes" Binding="{Binding AvailableBatches}" Width="60"/>
+                <DataGridTextColumn Header="Próx. vencim." Binding="{Binding NextExpiration}" Width="100"/>
+                <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="90"/>
+                <DataGridTextColumn Header="Activo" Binding="{Binding IsActive}" Width="60"/>
+                <DataGridTemplateColumn Header="" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Ver lotes"
-                            Command="{Binding DataContext.ViewBatchesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                            CommandParameter="{Binding}"/>
+                            <Button Content="Lotes"
+                                    Command="{Binding DataContext.ViewBatchesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-
-                <DataGridTemplateColumn Header="" Width="140">
+                <DataGridTemplateColumn Header="" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Config. alerta"
-                    Command="{Binding DataContext.ConfigureAlertCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                    CommandParameter="{Binding}"/>
+                            <Button Content="Editar"
+                                    Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Command="{Binding DataContext.EditMedicineCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-
+                <DataGridTemplateColumn Header="" Width="90">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding IsActive, Converter={StaticResource ActiveToLabelConverter}}"
+                                    Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Command="{Binding DataContext.ToggleActiveCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

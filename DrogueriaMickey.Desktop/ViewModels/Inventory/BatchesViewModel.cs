@@ -26,6 +26,11 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
         [ObservableProperty] private BatchDto? selectedBatchForIngreso;
         [ObservableProperty] private string ingresoQuantity = string.Empty;
 
+        // Campos del formulario "Registrar ajuste" (RF-017)
+        [ObservableProperty] private BatchDto? selectedBatchForAdjustment;
+        [ObservableProperty] private string adjustmentNewQuantity = string.Empty;
+        [ObservableProperty] private string adjustmentReason = string.Empty;
+
         public BatchesViewModel(MedicineService medicineService)
         {
             _medicineService = medicineService;
@@ -36,6 +41,48 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
             _medicineId = medicineId;
             MedicineName = medicineName;
             _ = LoadBatches();
+        }
+
+        [RelayCommand]
+        private async Task RegisterAdjustment()
+        {
+            ErrorMessage = string.Empty;
+            SuccessMessage = string.Empty;
+
+            if (SelectedBatchForAdjustment == null)
+            {
+                ErrorMessage = "Selecciona un lote para registrar el ajuste";
+                return;
+            }
+
+            if (!int.TryParse(AdjustmentNewQuantity, out var newQty) || newQty < 0)
+            {
+                ErrorMessage = "La cantidad nueva debe ser un número entero mayor o igual a cero";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(AdjustmentReason))
+            {
+                ErrorMessage = "El motivo del ajuste es obligatorio";
+                return;
+            }
+
+            IsBusy = true;
+            var result = await _medicineService.RegisterAdjustmentAsync(_medicineId, SelectedBatchForAdjustment.Id, newQty, AdjustmentReason);
+            IsBusy = false;
+
+            if (!result.Success)
+            {
+                ErrorMessage = result.ErrorMessage ?? "No se pudo registrar el ajuste";
+                return;
+            }
+
+            SuccessMessage = $"Ajuste registrado: {SelectedBatchForAdjustment.BatchCode} pasó de {SelectedBatchForAdjustment.Quantity} a {newQty} unidades";
+            AdjustmentNewQuantity = string.Empty;
+            AdjustmentReason = string.Empty;
+            SelectedBatchForAdjustment = null;
+
+            await LoadBatches();
         }
 
         [RelayCommand]

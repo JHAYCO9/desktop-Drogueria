@@ -19,14 +19,23 @@ namespace DrogueriaMickey.Desktop.ViewModels
         public bool IsOfflineSession => _session.IsOfflineSession;
         public event Action? LoggedOut;
 
-        public MainViewModel(IServiceProvider services, SessionService session, NavigationService navigation, AuthService authService) // <-- CAMBIO 2: parámetro nuevo
+        private readonly SyncService _syncService;
+        public SyncService Sync => _syncService;
+
+        public MainViewModel(IServiceProvider services, SessionService session, NavigationService navigation, AuthService authService, SyncService syncService)
         {
             _services = services;
             _session = session;
             Navigation = navigation;
-            _authService = authService;                              // <-- CAMBIO 2: asignación nueva
-            // vista inicial al entrar al shell
+            _authService = authService;
+            _syncService = syncService;
             NavigateToDashboard();
+        }
+
+        [RelayCommand]
+        private async Task SyncNow()
+        {
+            await _syncService.SyncNowAsync();
         }
 
         [RelayCommand]
@@ -69,7 +78,8 @@ namespace DrogueriaMickey.Desktop.ViewModels
         [RelayCommand]
         private void NavigateToSales()
         {
-            var view = new Views.Sales.SalePosView();
+            var vm = _services.GetRequiredService<ViewModels.Sales.SalePosViewModel>();
+            var view = new Views.Sales.SalePosView { DataContext = vm };
             Navigation.NavigateTo(view);
         }
 
@@ -108,5 +118,24 @@ namespace DrogueriaMickey.Desktop.ViewModels
             var view = new Views.Users.AuditLogView { DataContext = vm };
             Navigation.NavigateTo(view);
         }
+
+        [RelayCommand]
+        private void NavigateToMovements()
+        {
+            var vm = _services.GetRequiredService<ViewModels.Inventory.InventoryMovementsViewModel>();
+            vm.InitializeMovements();
+            var view = new Views.Inventory.InventoryMovementsView { DataContext = vm };
+            Navigation.NavigateTo(view);
+        }
+
+        [RelayCommand]
+        private void NavigateToStockHistory()
+        {
+            var vm = _services.GetRequiredService<ViewModels.Inventory.InventoryMovementsViewModel>();
+            vm.InitializeHistory();
+            var view = new Views.Inventory.InventoryMovementsView { DataContext = vm };
+            Navigation.NavigateTo(view);
+        }
+
     }
 }

@@ -6,6 +6,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -57,8 +58,34 @@
             </StackPanel>
         </Border>
 
+        <!-- RF-017: registrar ajuste de inventario -->
+        <Border Grid.Row="3" Background="#FEF3C7" Padding="12" CornerRadius="8" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="Registrar ajuste de inventario (corrección por conteo físico)" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox Width="200" ItemsSource="{Binding Batches}" SelectedItem="{Binding SelectedBatchForAdjustment}"
+                      DisplayMemberPath="BatchCode" Margin="0,0,8,0" Padding="6"/>
+                    <StackPanel Width="110" Margin="0,0,8,0">
+                        <TextBlock Text="Cant. actual" FontSize="11"/>
+                        <TextBox Text="{Binding SelectedBatchForAdjustment.Quantity, Mode=OneWay}" Padding="6" IsEnabled="False"/>
+                    </StackPanel>
+                    <StackPanel Width="110" Margin="0,0,8,0">
+                        <TextBlock Text="Cant. nueva" FontSize="11"/>
+                        <TextBox Text="{Binding AdjustmentNewQuantity, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+                    </StackPanel>
+                    <StackPanel Width="200" Margin="0,0,8,0">
+                        <TextBlock Text="Motivo" FontSize="11"/>
+                        <TextBox Text="{Binding AdjustmentReason, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+                    </StackPanel>
+                    <Button Content="Registrar ajuste" Command="{Binding RegisterAdjustmentCommand}"
+                    Background="#D97706" Foreground="White" BorderThickness="0"
+                    Padding="12,0" VerticalAlignment="Bottom" Height="30" Cursor="Hand"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
         <!-- RF-018: lista de lotes con estado -->
-        <DataGrid Grid.Row="3" ItemsSource="{Binding Batches}" AutoGenerateColumns="False" IsReadOnly="True">
+        <DataGrid Grid.Row="4" ItemsSource="{Binding Batches}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="160"/>
                 <DataGridTextColumn Header="Fecha ingreso" Binding="{Binding ReceivedAt}" Width="120"/>

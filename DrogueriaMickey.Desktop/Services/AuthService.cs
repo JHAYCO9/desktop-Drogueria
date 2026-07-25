@@ -102,6 +102,12 @@ namespace DrogueriaMickey.Desktop.Services
             {
                 return await TryOfflineLogin(username, password, localUser);
             }
+            catch (Exception ex)
+            {
+                // Cualquier otro error (ej. lock de SQLite) se reporta en vez de
+                // dejar el login colgado indefinidamente.
+                return new LoginResult { Success = false, ErrorMessage = $"Error al iniciar sesión: {ex.Message}" };
+            }
         }
 
         public async Task LogoutAsync()

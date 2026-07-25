@@ -8,8 +8,8 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
     public partial class MedicineEditViewModel : ObservableObject
     {
         private readonly MedicineService _medicineService;
+        private string? _editingId;
 
-        [ObservableProperty] private string alertDays = "30";
         [ObservableProperty] private string barcode = string.Empty;
         [ObservableProperty] private string name = string.Empty;
         [ObservableProperty] private string laboratory = string.Empty;
@@ -18,9 +18,14 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
         [ObservableProperty] private string pricePerPill = "0";
         [ObservableProperty] private string pricePerSeal = "0";
         [ObservableProperty] private string pricePerBox = "0";
-        [ObservableProperty] private string minStock = "0"; // RF-020
+        [ObservableProperty] private string minStock = "0";
+        [ObservableProperty] private bool hasIva;
         [ObservableProperty] private string errorMessage = string.Empty;
         [ObservableProperty] private bool isBusy;
+
+        public bool IsEditMode => _editingId != null;
+        public bool IsCreateMode => !IsEditMode;
+        public string Title => IsEditMode ? "Editar medicamento" : "Nuevo medicamento";
 
         public event Action? Saved;
 
@@ -29,13 +34,27 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
             _medicineService = medicineService;
         }
 
-        // Método dedicado para cuando el código llega desde el lector
-        // (RF-026): permite escanear directo en el formulario de registro
-        // sin tener que teclearlo manualmente.
-        public void SetScannedBarcode(string scannedCode)
+        public void InitializeCreate() => _editingId = null;
+
+        public void InitializeEdit(MedicineDto existing)
         {
-            Barcode = scannedCode;
+            _editingId = existing.Id;
+            Barcode = existing.Barcode; // solo lectura en modo edición, ver XAML
+            Name = existing.Name;
+            Laboratory = existing.Laboratory;
+            Concentration = existing.Concentration;
+            Presentation = existing.Presentation;
+            PricePerPill = existing.PricePerPill.ToString();
+            PricePerSeal = existing.PricePerSeal.ToString();
+            PricePerBox = existing.PricePerBox.ToString();
+            MinStock = existing.MinStock.ToString();
+            HasIva = existing.HasIva;
+            OnPropertyChanged(nameof(IsEditMode));
+            OnPropertyChanged(nameof(IsCreateMode));
+            OnPropertyChanged(nameof(Title));
         }
+
+        public void SetScannedBarcode(string scannedCode) => Barcode = scannedCode;
 
         [RelayCommand]
         private async Task Save()
@@ -63,14 +82,15 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
             }
 
             IsBusy = true;
-            var result = await _medicineService.RegisterMedicineAsync(
-                Barcode, Name, Laboratory, Concentration, Presentation,
-                pill, seal, box, minStockValue);
+            var result = IsCreateMode
+                ? await _medicineService.RegisterMedicineAsync(Barcode, Name, Laboratory, Concentration, Presentation, pill, seal, box, minStockValue, HasIva)
+                : await _medicineService.UpdateMedicineAsync(_editingId!, Name, Presentation, Concentration, pill, seal, box, minStockValue, HasIva);
+
             IsBusy = false;
 
             if (!result.Success)
             {
-                ErrorMessage = result.ErrorMessage ?? "No se pudo registrar el medicamento";
+                ErrorMessage = result.ErrorMessage ?? "No se pudo guardar el medicamento";
                 return;
             }
 

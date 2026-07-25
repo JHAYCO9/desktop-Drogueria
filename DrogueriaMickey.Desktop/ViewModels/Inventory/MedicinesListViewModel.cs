@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using DrogueriaMickey.Desktop.Navigation;
 using DrogueriaMickey.Desktop.Services;
+using System.Linq;
 
 namespace DrogueriaMickey.Desktop.ViewModels.Inventory
 {
@@ -13,13 +14,28 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
         private readonly IServiceProvider _services;
         private readonly NavigationService _navigation;
 
-        private List<MedicineDto> _allMedicines = new(); // copia completa, sin filtrar
+        private List<MedicineDto> _allMedicines = new();
 
         [ObservableProperty] private ObservableCollection<MedicineDto> medicines = new();
         [ObservableProperty] private string barcodeInput = string.Empty;
+        [ObservableProperty] private string filterName = string.Empty;
+        [ObservableProperty] private string filterLaboratory = string.Empty;
         [ObservableProperty] private string errorMessage = string.Empty;
-        [ObservableProperty] private bool isFiltered; // controla si se ve el botón "Ver todos"
+        [ObservableProperty] private bool isFiltered;
         [ObservableProperty] private bool isBusy;
+
+        private readonly SessionService _session;
+
+        public bool IsAdmin => _session.IsAdministrator;
+
+        public MedicinesListViewModel(MedicineService medicineService, IServiceProvider services, NavigationService navigation, SessionService session)
+        {
+            _medicineService = medicineService;
+            _services = services;
+            _navigation = navigation;
+            _session = session;
+            _ = LoadMedicines();
+        }
 
         public MedicinesListViewModel(MedicineService medicineService, IServiceProvider services, NavigationService navigation)
         {
@@ -29,26 +45,61 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
             _ = LoadMedicines();
         }
 
+        // Carga la lista base de medicamentos y la enriquece con stock/estado
+        // desde inventario general (RF-028), para tener todo en una sola tabla.
         [RelayCommand]
         private async Task LoadMedicines()
         {
             IsBusy = true;
-            var result = await _medicineService.ListMedicinesAsync();
+            ErrorMessage = string.Empty;
+
+            var medsResult = await _medicineService.ListMedicinesAsync();
+            var generalResult = await _medicineService.GetGeneralInventoryAsync();
             IsBusy = false;
 
-            if (!result.Success)
+            if (!medsResult.Success)
             {
-                ErrorMessage = result.ErrorMessage ?? "No se pudieron cargar los medicamentos";
+                ErrorMessage = medsResult.ErrorMessage ?? "No se pudieron cargar los medicamentos";
                 return;
             }
 
-            _allMedicines = result.Data ?? new();
-            Medicines = new ObservableCollection<MedicineDto>(_allMedicines);
+            var list = medsResult.Data ?? new List<MedicineDto>();
+            var generalById = (generalResult.Data ?? new List<InventoryGeneralItemDto>())
+                .ToDictionary(g => g.Id, g => g);
+
+            foreach (var m in list)
+            {
+                if (generalById.TryGetValue(m.Id, out var g))
+                {
+                    m.TotalStock = g.TotalStock;
+                    m.Status = g.Status;
+                    m.NextExpiration = g.NextExpiration;
+                    m.AvailableBatches = g.AvailableBatches;
+                }
+            }
+
+            _allMedicines = list;
+            ApplyFilter();
             IsFiltered = false;
         }
 
-        // RF-026/027: filtra la tabla al medicamento escaneado, en vez de
-        // solo mostrar un mensaje aparte.
+        partial void OnFilterNameChanged(string value) => ApplyFilter();
+        partial void OnFilterLaboratoryChanged(string value) => ApplyFilter();
+
+        private void ApplyFilter()
+        {
+            IEnumerable<MedicineDto> filtered = _allMedicines;
+
+            if (!string.IsNullOrWhiteSpace(FilterName))
+                filtered = filtered.Where(m => m.Name.Contains(FilterName, StringComparison.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrWhiteSpace(FilterLaboratory))
+                filtered = filtered.Where(m => m.Laboratory.Contains(FilterLaboratory, StringComparison.OrdinalIgnoreCase));
+
+            Medicines = new ObservableCollection<MedicineDto>(filtered);
+        }
+
+        // RF-026/027: escaneo físico, exacto, contra el backend.
         [RelayCommand]
         private async Task ScanBarcode()
         {
@@ -76,9 +127,66 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
         [RelayCommand]
         private void ClearFilter()
         {
-            Medicines = new ObservableCollection<MedicineDto>(_allMedicines);
+            FilterName = string.Empty;
+            FilterLaboratory = string.Empty;
+            ApplyFilter();
             IsFiltered = false;
             ErrorMessage = string.Empty;
+        }
+
+        [RelayCommand]
+        private void NewMedicine()
+        {
+            var vm = _services.GetRequiredService<MedicineEditViewModel>();
+            vm.InitializeCreate();
+            vm.Saved += async () =>
+            {
+                var listView = new Views.Inventory.MedicinesListView { DataContext = this };
+                _navigation.NavigateTo(listView);
+                await LoadMedicines();
+            };
+            var view = new Views.Inventory.MedicineEditView { DataContext = vm };
+            _navigation.NavigateTo(view);
+        }
+
+        [RelayCommand]
+        private void EditMedicine(MedicineDto medicine)
+        {
+            var vm = _services.GetRequiredService<MedicineEditViewModel>();
+            vm.InitializeEdit(medicine);
+            vm.Saved += async () =>
+            {
+                var listView = new Views.Inventory.MedicinesListView { DataContext = this };
+                _navigation.NavigateTo(listView);
+                await LoadMedicines();
+            };
+            var view = new Views.Inventory.MedicineEditView { DataContext = vm };
+            _navigation.NavigateTo(view);
+        }
+
+        [RelayCommand]
+        private async Task ToggleActive(MedicineDto medicine)
+        {
+            var action = medicine.IsActive ? "desactivar" : "activar";
+            var confirm = System.Windows.MessageBox.Show(
+                $"¿Seguro que quieres {action} {medicine.Name}?", "Confirmar",
+                System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
+
+            if (confirm != System.Windows.MessageBoxResult.Yes) return;
+
+            IsBusy = true;
+            var result = medicine.IsActive
+                ? await _medicineService.DeactivateMedicineAsync(medicine.Id)
+                : await _medicineService.ActivateMedicineAsync(medicine.Id);
+            IsBusy = false;
+
+            if (!result.Success)
+            {
+                ErrorMessage = result.ErrorMessage ?? $"No se pudo {action} el medicamento";
+                return;
+            }
+
+            await LoadMedicines();
         }
 
         [RelayCommand]
@@ -90,32 +198,14 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
             _navigation.NavigateTo(view);
         }
 
+        // Botón dentro de la misma vista de Medicamentos, pide el ViewModel
+        // de movimientos ya construido (RF-019) y navega a él.
         [RelayCommand]
-        private async Task ConfigureAlert(MedicineDto medicine)
+        private void ViewMovements()
         {
-            var input = Microsoft.VisualBasic.Interaction.InputBox(
-                "Días antes del vencimiento para alertar:", "Configurar alerta", "30");
-
-            if (int.TryParse(input, out var days) && days > 0)
-            {
-                var result = await _medicineService.UpdateAlertDaysAsync(medicine.Id, days);
-                if (!result.Success)
-                    ErrorMessage = result.ErrorMessage ?? "No se pudo actualizar la configuración";
-            }
-        }
-
-        [RelayCommand]
-        private void NewMedicine()
-        {
-            var vm = _services.GetRequiredService<MedicineEditViewModel>();
-            vm.Saved += async () =>
-            {
-                // vuelve a la lista y la recarga con el medicamento nuevo incluido
-                var listView = new Views.Inventory.MedicinesListView { DataContext = this };
-                _navigation.NavigateTo(listView);
-                await LoadMedicines();
-            };
-            var view = new Views.Inventory.MedicineEditView { DataContext = vm };
+            var vm = _services.GetRequiredService<InventoryMovementsViewModel>();
+            vm.InitializeMovements();
+            var view = new Views.Inventory.InventoryMovementsView { DataContext = vm };
             _navigation.NavigateTo(view);
         }
     }
