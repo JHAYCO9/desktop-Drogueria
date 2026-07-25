@@ -58,6 +58,7 @@ namespace DrogueriaMickey.Desktop
             services.AddSingleton<Navigation.NavigationService>();
             services.AddDbContext<AppDbContext>(contextLifetime: ServiceLifetime.Transient, optionsLifetime: ServiceLifetime.Transient); services.AddHttpClient<AuthService>();
             services.AddSingleton<SyncService>();
+            services.AddTransient<ViewModels.Sales.SalesHistoryViewModel>();
             services.AddTransient<ViewModels.Auth.LoginViewModel>();
             services.AddTransient<ViewModels.MainViewModel>();
             services.AddHttpClient<UserService>();

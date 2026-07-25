@@ -17,13 +17,37 @@ namespace DrogueriaMickey.Desktop.Services
         public decimal UnitPrice { get; set; }
         public decimal Subtotal { get; set; }
         public decimal TaxAmount { get; set; }
+        public string SaleUnit { get; set; } = string.Empty;
 
+    }
+
+    public class SaleListItemDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public int SaleNumber { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
+        public string? PaymentMethod { get; set; }
+        public string CashierName { get; set; } = string.Empty;
+        public string CreatedAt { get; set; } = string.Empty;
+    }
+
+    public class SalesDateRangeSummaryDto
+    {
+        public string FromDate { get; set; } = string.Empty;
+        public string ToDate { get; set; } = string.Empty;
+        public int SalesCount { get; set; }
+        public decimal TotalSold { get; set; }
+        public decimal AverageSale { get; set; }
+        public List<SaleListItemDto> Sales { get; set; } = new();
     }
 
     public class ReceiptItemDto
     {
         public string MedicineName { get; set; } = string.Empty;
         public int Quantity { get; set; }
+        public string SaleUnit { get; set; } = string.Empty;
+
         public decimal UnitPrice { get; set; }
         public decimal BasePrice { get; set; }
         public decimal TaxAmount { get; set; }
@@ -116,21 +140,21 @@ namespace DrogueriaMickey.Desktop.Services
         }
 
         // RF-031 + RF-032
-        public async Task<ApiResult<StartSaleResponseDto>> StartSaleAsync()
+        public async Task<ApiResult<SaleDto>> StartSaleAsync()
         {
             try
             {
                 AttachToken();
                 var response = await _httpClient.PostAsync("sales", null);
                 if (!response.IsSuccessStatusCode)
-                    return new ApiResult<StartSaleResponseDto> { Success = false, ErrorMessage = await ReadError(response) };
+                    return new ApiResult<SaleDto> { Success = false, ErrorMessage = await ReadError(response) };
 
-                var data = await response.Content.ReadFromJsonAsync<StartSaleResponseDto>(JsonOptions.Default);
-                return new ApiResult<StartSaleResponseDto> { Success = true, Data = data };
+                var data = await response.Content.ReadFromJsonAsync<SaleDto>(JsonOptions.Default);
+                return new ApiResult<SaleDto> { Success = true, Data = data };
             }
             catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
             {
-                return new ApiResult<StartSaleResponseDto> { Success = false, ErrorMessage = ConnectionErrorMessage };
+                return new ApiResult<SaleDto> { Success = false, ErrorMessage = ConnectionErrorMessage };
             }
         }
 
@@ -152,8 +176,46 @@ namespace DrogueriaMickey.Desktop.Services
             }
         }
 
+        // RF-044
+        public async Task<ApiResult<List<SaleListItemDto>>> ListSalesAsync()
+        {
+            try
+            {
+                AttachToken();
+                var response = await _httpClient.GetAsync("sales");
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<List<SaleListItemDto>> { Success = false, ErrorMessage = await ReadError(response) };
+
+                var data = await response.Content.ReadFromJsonAsync<List<SaleListItemDto>>(JsonOptions.Default);
+                return new ApiResult<List<SaleListItemDto>> { Success = true, Data = data };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<List<SaleListItemDto>> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
+        }
+
+        // RF-047
+        public async Task<ApiResult<SalesDateRangeSummaryDto>> GetSalesByDateRangeAsync(string from, string to)
+        {
+            try
+            {
+                AttachToken();
+                var response = await _httpClient.GetAsync($"sales/range?from={from}&to={to}");
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<SalesDateRangeSummaryDto> { Success = false, ErrorMessage = await ReadError(response) };
+
+                var data = await response.Content.ReadFromJsonAsync<SalesDateRangeSummaryDto>(JsonOptions.Default);
+                return new ApiResult<SalesDateRangeSummaryDto> { Success = true, Data = data };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<SalesDateRangeSummaryDto> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
+        }
+
         // RF-033
-        public async Task<ApiResult<SaleDto>> AddItemByBarcodeAsync(string saleId, string barcode, int quantity)
+        public async Task<ApiResult<SaleDto>> AddItemByBarcodeAsync(string saleId, string barcode, int quantity, string saleUnit)
         {
             try
             {
@@ -161,7 +223,8 @@ namespace DrogueriaMickey.Desktop.Services
                 var response = await _httpClient.PostAsJsonAsync($"sales/{saleId}/items", new
                 {
                     barcode,
-                    quantity
+                    quantity,
+                    sale_unit = saleUnit
                 }, JsonOptions.Default);
 
                 if (!response.IsSuccessStatusCode)

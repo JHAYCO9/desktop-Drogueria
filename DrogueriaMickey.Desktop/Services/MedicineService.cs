@@ -19,10 +19,13 @@ namespace DrogueriaMickey.Desktop.Services
         public decimal PricePerBox { get; set; }
         public int MinStock { get; set; }
         public bool HasIva { get; set; }
-
+        public bool SellsByPill { get; set; }
+        public bool SellsBySeal { get; set; }
+        public bool SellsByBox { get; set; }
+        public int UnitsPerSeal { get; set; }
+        public int UnitsPerBox { get; set; }
         public bool IsActive { get; set; }
         public string CreatedAt { get; set; } = string.Empty;
-
         public int TotalStock { get; set; }
         public string Status { get; set; } = string.Empty;
         public string NextExpiration { get; set; } = string.Empty;
@@ -118,7 +121,7 @@ namespace DrogueriaMickey.Desktop.Services
 
         // RF-012
         public async Task<ApiResult<object>> UpdateMedicineAsync(string id, string name, string presentation, string concentration,
-            decimal pricePerPill, decimal pricePerSeal, decimal pricePerBox, int minStock, bool hasIva)
+            decimal pricePerPill, decimal pricePerSeal, decimal pricePerBox, int minStock, bool hasIva, bool sellsByPill, bool sellsBySeal, bool sellsByBox, int unitsPerSeal, int unitsPerBox)
         {
             try
             {
@@ -132,7 +135,12 @@ namespace DrogueriaMickey.Desktop.Services
                     price_per_seal = pricePerSeal,
                     price_per_box = pricePerBox,
                     min_stock = minStock,
-                    has_iva = hasIva
+                    has_iva = hasIva,
+                    sells_by_pill = sellsByPill,
+                    sells_by_seal = sellsBySeal,
+                    sells_by_box = sellsByBox,
+                    units_per_seal = unitsPerSeal,
+                    units_per_box = unitsPerBox
                 }, JsonOptions.Default);
 
                 if (!response.IsSuccessStatusCode)
@@ -270,13 +278,14 @@ namespace DrogueriaMickey.Desktop.Services
         }
 
         // RF-016
-        public async Task<ApiResult<object>> RegisterIngresoAsync(string batchId, int quantity)
+        public async Task<ApiResult<object>> RegisterIngresoAsync(string batchId, int quantity, string saleUnit)
         {
             AttachToken();
-            var response = await _httpClient.PostAsJsonAsync("inventory/ingreso", new
+            var response = await _httpClient.PostAsJsonAsync("inventory/receipt", new
             {
                 batch_id = batchId,
-                quantity
+                quantity,
+                sale_unit = saleUnit
             }, JsonOptions.Default);
 
             if (!response.IsSuccessStatusCode)
@@ -381,7 +390,8 @@ namespace DrogueriaMickey.Desktop.Services
 
         public async Task<ApiResult<object>> RegisterMedicineAsync(
             string barcode, string name, string laboratory, string concentration, string presentation,
-            decimal pricePerPill, decimal pricePerSeal, decimal pricePerBox, int minStock, bool hasIva)
+            decimal pricePerPill, decimal pricePerSeal, decimal pricePerBox, int minStock, bool hasIva,
+            bool sellsByPill, bool sellsBySeal, bool sellsByBox, int unitsPerSeal, int unitsPerBox)
         {
             try
             {
@@ -397,7 +407,12 @@ namespace DrogueriaMickey.Desktop.Services
                     price_per_seal = pricePerSeal,
                     price_per_box = pricePerBox,
                     min_stock = minStock,
-                    has_iva = hasIva
+                    has_iva = hasIva,
+                    sells_by_pill = sellsByPill,
+                    sells_by_seal = sellsBySeal,
+                    sells_by_box = sellsByBox,
+                    units_per_seal = unitsPerSeal,
+                    units_per_box = unitsPerBox
                 }, JsonOptions.Default);
 
                 if (!response.IsSuccessStatusCode)

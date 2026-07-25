@@ -23,6 +23,8 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
         [ObservableProperty] private string successMessage = string.Empty;
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private bool hasActiveSale;
+        [ObservableProperty] private ObservableCollection<string> availableUnits = new();
+        [ObservableProperty] private string selectedUnit = "pastilla";
 
         public SalePosViewModel(SaleService saleService, IServiceProvider services, ReceiptPrintService printService, CashDrawerService drawerService)
         {
@@ -30,6 +32,8 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
             _services = services;
             _printService = printService;
             _drawerService = drawerService;
+            AvailableUnits = new ObservableCollection<string> { "pastilla", "sello", "caja" };
+            SelectedUnit = "pastilla";
             _ = StartSale();
         }
 
@@ -53,8 +57,8 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
 
             SaleId = result.Data.Id;
             SaleNumber = result.Data.SaleNumber;
-            Items = new ObservableCollection<SaleItemDto>();
-            TotalAmount = 0;
+            Items = new ObservableCollection<SaleItemDto>(result.Data.Items); // ya viene con lo que tenía antes, si retomó
+            TotalAmount = result.Data.TotalAmount;
             HasActiveSale = true;
         }
 
@@ -82,7 +86,7 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
             }
 
             IsBusy = true;
-            var result = await _saleService.AddItemByBarcodeAsync(SaleId, BarcodeInput.Trim(), qty);
+            var result = await _saleService.AddItemByBarcodeAsync(SaleId, BarcodeInput.Trim(), qty, SelectedUnit);
             IsBusy = false;
 
             if (!result.Success || result.Data == null)

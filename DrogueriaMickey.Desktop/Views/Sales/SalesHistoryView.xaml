@@ -1,11 +1,66 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Sales.SalesHistoryView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             mc:Ignorable="d"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             d:DesignHeight="450" d:DesignWidth="800">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
+        <TextBlock Grid.Row="0" Text="Historial de ventas" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+
+        <!-- RF-047: filtro por rango de fechas -->
+        <Border Grid.Row="1" Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Width="140" Margin="0,0,8,0">
+                    <TextBlock Text="Fecha inicial" FontSize="11"/>
+                    <TextBox Text="{Binding FromDate, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+                </StackPanel>
+                <StackPanel Width="140" Margin="0,0,8,0">
+                    <TextBlock Text="Fecha final" FontSize="11"/>
+                    <TextBox Text="{Binding ToDate, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+                </StackPanel>
+                <Button Content="Consultar rango" Command="{Binding FilterByRangeCommand}"
+                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                        Padding="16,0" VerticalAlignment="Bottom" Height="30" Cursor="Hand"/>
+                <Button Content="Ver todo" Command="{Binding LoadAllCommand}" Margin="8,0,0,0"
+                        Background="Transparent" BorderThickness="1" Padding="12,0" VerticalAlignment="Bottom" Height="30" Cursor="Hand"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Resumen del rango, solo visible cuando está filtrado -->
+        <Border Grid.Row="2" Background="{StaticResource PrimaryDarkBrush}" Padding="16" CornerRadius="8" Margin="0,0,0,16"
+                Visibility="{Binding IsFiltered, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <StackPanel Margin="0,0,32,0">
+                    <TextBlock Text="Número de ventas" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding SalesCount}" Foreground="White" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,32,0">
+                    <TextBlock Text="Total vendido" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding TotalSold, StringFormat='${0:N0}'}" Foreground="White" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Promedio por venta" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding AverageSale, StringFormat='${0:N0}'}" Foreground="White" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Sales}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="N° venta" Binding="{Binding SaleNumber}" Width="80"/>
+                <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="100"/>
+                <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat='${0:N0}'}" Width="100"/>
+                <DataGridTextColumn Header="Método de pago" Binding="{Binding PaymentMethod}" Width="120"/>
+                <DataGridTextColumn Header="Cajero" Binding="{Binding CashierName}" Width="*"/>
+                <DataGridTextColumn Header="Fecha" Binding="{Binding CreatedAt}" Width="160"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}"
+                   VerticalAlignment="Top" Margin="0,8,0,0"/>
     </Grid>
 </UserControl>

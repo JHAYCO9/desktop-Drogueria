@@ -129,6 +129,19 @@ namespace DrogueriaMickey.Desktop.ViewModels
         }
 
         [RelayCommand]
+        private void NavigateToSalesHistory()
+        {
+            if (!IsAdmin)
+            {
+                System.Windows.MessageBox.Show("No tienes permisos para acceder a este módulo.", "Acceso restringido");
+                return;
+            }
+            var vm = _services.GetRequiredService<ViewModels.Sales.SalesHistoryViewModel>();
+            var view = new Views.Sales.SalesHistoryView { DataContext = vm };
+            Navigation.NavigateTo(view);
+        }
+
+        [RelayCommand]
         private void NavigateToStockHistory()
         {
             var vm = _services.GetRequiredService<ViewModels.Inventory.InventoryMovementsViewModel>();

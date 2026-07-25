@@ -48,9 +48,9 @@ namespace DrogueriaMickey.Desktop.Services
 
             void DrawLine(string left, string right, GdiFont font)
             {
-                g.DrawString(left, font, GdiBrushes.Black, new GdiRectangleF(0, y, width * 0.6f, 20));
-                g.DrawString(right, font, GdiBrushes.Black, new GdiRectangleF(width * 0.6f, y, width * 0.4f, 20), rightFormat);
-                y += font.GetHeight(g) + 1;
+                g.DrawString(left, font, GdiBrushes.Black, new GdiRectangleF(0, y, width * 0.6f, 26));
+                g.DrawString(right, font, GdiBrushes.Black, new GdiRectangleF(width * 0.6f, y, width * 0.4f, 26), rightFormat);
+                y += font.GetHeight(g) + 3;
             }
 
             void DrawSeparator()
@@ -66,21 +66,26 @@ namespace DrogueriaMickey.Desktop.Services
             y += 4;
             DrawLine($"Fecha: {_receipt.Date}", $"Hora: {_receipt.Time}", _smallFont);
             DrawLine($"Venta #{_receipt.SaleNumber}", $"Cajero: {_receipt.CashierName}", _smallFont);
-            y += 2;
+            y += 8; // más aire antes del separador, para que el cajero no choque con el primer producto
             DrawSeparator();
+            y += 2;
 
             foreach (var item in _receipt.Items)
             {
-                DrawLine($"{item.Quantity}x {item.MedicineName}", $"${item.Subtotal:N0}", _normalFont);
+                // Espacio ANTES de cada producto, para separarlo bien del anterior
+                y += 6;
+
+                DrawLine($"{item.Quantity} {item.SaleUnit} - {item.MedicineName}", $"${item.Subtotal:N0}", _normalFont);
+                y += 10; // más aire entre el nombre del medicamento y su línea de IVA
 
                 if (item.HasIva)
                 {
                     g.DrawString($"  Base: ${item.BasePrice:N0}   IVA: ${item.TaxAmount:N0}",
                         _smallFont, GdiBrushes.DimGray, new GdiRectangleF(0, y, width, 20));
-                    y += _smallFont.GetHeight(g) + 6; // más aire después de la línea de IVA
+                    y += _smallFont.GetHeight(g) + 10; // más aire después de la línea de IVA
                 }
 
-                y += 4; // separación extra entre un producto y el siguiente, siempre
+                y += 8; // separación extra entre un producto y el siguiente, siempre
             }
 
             DrawSeparator();

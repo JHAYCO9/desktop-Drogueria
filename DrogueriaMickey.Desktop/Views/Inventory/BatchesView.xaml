@@ -49,6 +49,8 @@
                         <TextBlock Text="Cantidad" FontSize="11"/>
                         <TextBox Text="{Binding IngresoQuantity, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
                     </StackPanel>
+                    <TextBlock Text="Unidad:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                    <ComboBox ItemsSource="{Binding IngresoUnits}" SelectedItem="{Binding SelectedIngresoUnit}" Width="100" Padding="6" Margin="0,0,8,0"/>
                     <Button Content="Registrar ingreso" Command="{Binding RegisterIngresoCommand}"
                             Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
                             Padding="12,0" VerticalAlignment="Bottom" Height="30" Cursor="Hand"/>

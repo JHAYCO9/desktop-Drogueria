@@ -9,6 +9,14 @@
                 <ResourceDictionary Source="Resources/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
+            <Style TargetType="DataGrid">
+                <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+                <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+                <Setter Property="CanUserResizeColumns" Value="True"/>
+                <Setter Property="HorizontalGridLinesBrush" Value="#E5E7EB"/>
+                <Setter Property="VerticalGridLinesBrush" Value="#E5E7EB"/>
+            </Style>
+
             <SolidColorBrush x:Key="PrimaryBrush" Color="#3B82F6"/>
             <SolidColorBrush x:Key="PrimaryLightBrush" Color="#60A5FA"/>
             <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#1E3A8A"/>

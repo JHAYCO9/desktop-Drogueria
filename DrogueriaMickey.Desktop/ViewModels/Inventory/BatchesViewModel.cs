@@ -31,6 +31,9 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
         [ObservableProperty] private string adjustmentNewQuantity = string.Empty;
         [ObservableProperty] private string adjustmentReason = string.Empty;
 
+        [ObservableProperty] private ObservableCollection<string> ingresoUnits = new() { "pastilla", "sello", "caja" };
+        [ObservableProperty] private string selectedIngresoUnit = "pastilla";
+
         public BatchesViewModel(MedicineService medicineService)
         {
             _medicineService = medicineService;
@@ -155,7 +158,7 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
             }
 
             IsBusy = true;
-            var result = await _medicineService.RegisterIngresoAsync(SelectedBatchForIngreso.Id, qty);
+            var result = await _medicineService.RegisterIngresoAsync(SelectedBatchForIngreso.Id, qty, SelectedIngresoUnit);
             IsBusy = false;
 
             if (!result.Success)

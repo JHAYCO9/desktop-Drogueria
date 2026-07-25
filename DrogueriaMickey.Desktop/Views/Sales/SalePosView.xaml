@@ -26,6 +26,9 @@
                          Width="220" Padding="8" KeyDown="BarcodeBox_KeyDown"/>
                 <TextBlock Text="Cantidad:" VerticalAlignment="Center" Margin="16,0,8,0"/>
                 <TextBox Text="{Binding QuantityInput, UpdateSourceTrigger=PropertyChanged}" Width="60" Padding="8"/>
+                <TextBlock Text="Unidad:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                <TextBlock Text="Unidad:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                <ComboBox ItemsSource="{Binding AvailableUnits}" SelectedItem="{Binding SelectedUnit}" Width="100" Padding="6"/>
                 <Button Content="Agregar" Command="{Binding ScanAndAddCommand}" Margin="16,0,0,0"
                         Background="{StaticResource PrimaryBrush}" Foreground="White" Padding="12,6" BorderThickness="0" Cursor="Hand"/>
             </StackPanel>
@@ -39,6 +42,7 @@
                 <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="140"/>
                 <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="90"/>
                 <DataGridTextColumn Header="Precio unit." Binding="{Binding UnitPrice, StringFormat='${0:N0}'}" Width="100"/>
+                <DataGridTextColumn Header="Unidad" Binding="{Binding SaleUnit}" Width="80"/>
                 <DataGridTextColumn Header="IVA" Binding="{Binding TaxAmount, StringFormat='${0:N0}'}" Width="80"/>
                 <DataGridTextColumn Header="Subtotal" Binding="{Binding Subtotal, StringFormat='${0:N0}'}" Width="100"/>
                 <DataGridTemplateColumn Header="" Width="80">

@@ -47,6 +47,22 @@
 
         <CheckBox Content="Aplica IVA (19%)" IsChecked="{Binding HasIva}" Margin="0,0,0,16"/>
 
+        <TextBlock Text="Formas de venta habilitadas" FontWeight="SemiBold" Margin="0,8,0,8"/>
+
+        <CheckBox Content="Por pastilla suelta" IsChecked="{Binding SellsByPill}" Margin="0,0,0,8"/>
+
+        <CheckBox Content="Por sello/blister" IsChecked="{Binding SellsBySeal}" Margin="0,0,0,4"/>
+        <StackPanel Orientation="Horizontal" Margin="20,0,0,8" Visibility="{Binding SellsBySeal, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock Text="Pastillas por sello:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox Text="{Binding UnitsPerSeal, UpdateSourceTrigger=PropertyChanged}" Width="60" Padding="4"/>
+        </StackPanel>
+
+        <CheckBox Content="Por caja/tarro completo" IsChecked="{Binding SellsByBox}" Margin="0,0,0,4"/>
+        <StackPanel Orientation="Horizontal" Margin="20,0,0,16" Visibility="{Binding SellsByBox, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock Text="Pastillas por caja:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox Text="{Binding UnitsPerBox, UpdateSourceTrigger=PropertyChanged}" Width="60" Padding="4"/>
+        </StackPanel>
+
         <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" Margin="0,0,0,12"/>
 
         <Button Content="Guardar" Command="{Binding SaveCommand}" Background="{StaticResource PrimaryBrush}"

@@ -47,6 +47,8 @@
 <Button Content="Alertas" Command="{Binding NavigateToStockAlertsCommand}" Style="{StaticResource MenuButtonStyle}"/>
             <Button Content="Usuarios" Command="{Binding NavigateToUsersCommand}" Style="{StaticResource MenuButtonStyle}"
                     Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <Button Content="Historial de ventas" Command="{Binding NavigateToSalesHistoryCommand}" Style="{StaticResource MenuButtonStyle}"
+        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
 <Button Content="Auditoría" Command="{Binding NavigateToAuditLogCommand}" Style="{StaticResource MenuButtonStyle}"
         Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </StackPanel>

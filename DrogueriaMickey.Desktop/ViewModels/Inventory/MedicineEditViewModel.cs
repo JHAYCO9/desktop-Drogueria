@@ -20,6 +20,11 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
         [ObservableProperty] private string pricePerBox = "0";
         [ObservableProperty] private string minStock = "0";
         [ObservableProperty] private bool hasIva;
+        [ObservableProperty] private bool sellsByPill = true;
+        [ObservableProperty] private bool sellsBySeal;
+        [ObservableProperty] private bool sellsByBox;
+        [ObservableProperty] private string unitsPerSeal = "1";
+        [ObservableProperty] private string unitsPerBox = "1";
         [ObservableProperty] private string errorMessage = string.Empty;
         [ObservableProperty] private bool isBusy;
 
@@ -49,6 +54,11 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
             PricePerBox = existing.PricePerBox.ToString();
             MinStock = existing.MinStock.ToString();
             HasIva = existing.HasIva;
+            SellsByPill = existing.SellsByPill;
+            SellsBySeal = existing.SellsBySeal;
+            SellsByBox = existing.SellsByBox;
+            UnitsPerSeal = existing.UnitsPerSeal.ToString();
+            UnitsPerBox = existing.UnitsPerBox.ToString();
             OnPropertyChanged(nameof(IsEditMode));
             OnPropertyChanged(nameof(IsCreateMode));
             OnPropertyChanged(nameof(Title));
@@ -81,10 +91,52 @@ namespace DrogueriaMickey.Desktop.ViewModels.Inventory
                 return;
             }
 
+            if (!SellsByPill && !SellsBySeal && !SellsByBox)
+            {
+                ErrorMessage = "Debes activar al menos una forma de venta (pastilla, sello o caja)";
+                return;
+            }
+
+            int.TryParse(UnitsPerSeal, out var perSeal);
+            int.TryParse(UnitsPerBox, out var perBox);
+
+            perSeal = perSeal < 1 ? 1 : perSeal;
+            perBox = perBox < 1 ? 1 : perBox;
+
             IsBusy = true;
+
             var result = IsCreateMode
-                ? await _medicineService.RegisterMedicineAsync(Barcode, Name, Laboratory, Concentration, Presentation, pill, seal, box, minStockValue, HasIva)
-                : await _medicineService.UpdateMedicineAsync(_editingId!, Name, Presentation, Concentration, pill, seal, box, minStockValue, HasIva);
+                ? await _medicineService.RegisterMedicineAsync(
+                    Barcode,
+                    Name,
+                    Laboratory,
+                    Concentration,
+                    Presentation,
+                    pill,
+                    seal,
+                    box,
+                    minStockValue,
+                    HasIva,
+                    SellsByPill,
+                    SellsBySeal,
+                    SellsByBox,
+                    perSeal,
+                    perBox)
+                : await _medicineService.UpdateMedicineAsync(
+                    _editingId!,
+                    Name,
+                    Presentation,
+                    Concentration,
+                    pill,
+                    seal,
+                    box,
+                    minStockValue,
+                    HasIva,
+                    SellsByPill,
+                    SellsBySeal,
+                    SellsByBox,
+                    perSeal,
+                    perBox);
 
             IsBusy = false;
 
