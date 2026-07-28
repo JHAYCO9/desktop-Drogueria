@@ -1,79 +1,164 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Sales.SalePosView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-            <TextBlock Text="Punto de venta" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-            <Button Content="Cancelar venta" Command="{Binding CancelSaleCommand}" Margin="8,0,0,0"
-            Background="{StaticResource ErrorBrush}" Foreground="White" Padding="12,6" BorderThickness="0" Cursor="Hand"
-            Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}"/>
-        </StackPanel>
+    <Grid Background="{StaticResource BackgroundLightBrush}" Margin="-16">
+        <Grid Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
 
-        <!-- RF-033: escaneo de productos -->
-        <Border Grid.Row="1" Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8" Margin="0,0,0,16"
-                Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Código de barras:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                <TextBox x:Name="BarcodeBox"
-                         Text="{Binding BarcodeInput, UpdateSourceTrigger=PropertyChanged}"
-                         Width="220" Padding="8" KeyDown="BarcodeBox_KeyDown"/>
-                <TextBlock Text="Cantidad:" VerticalAlignment="Center" Margin="16,0,8,0"/>
-                <TextBox Text="{Binding QuantityInput, UpdateSourceTrigger=PropertyChanged}" Width="60" Padding="8"/>
-                <TextBlock Text="Unidad:" VerticalAlignment="Center" Margin="16,0,8,0"/>
-                <TextBlock Text="Unidad:" VerticalAlignment="Center" Margin="16,0,8,0"/>
-                <ComboBox ItemsSource="{Binding AvailableUnits}" SelectedItem="{Binding SelectedUnit}" Width="100" Padding="6"/>
-                <Button Content="Agregar" Command="{Binding ScanAndAddCommand}" Margin="16,0,0,0"
-                        Background="{StaticResource PrimaryBrush}" Foreground="White" Padding="12,6" BorderThickness="0" Cursor="Hand"/>
-            </StackPanel>
-        </Border>
+            <!-- ===================== COLUMNA IZQUIERDA ===================== -->
+            <Grid Grid.Column="0" Margin="0,0,20,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-        <!-- Detalle de la venta -->
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
-                  Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="*"/>
-                <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="140"/>
-                <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="90"/>
-                <DataGridTextColumn Header="Precio unit." Binding="{Binding UnitPrice, StringFormat='${0:N0}'}" Width="100"/>
-                <DataGridTextColumn Header="Unidad" Binding="{Binding SaleUnit}" Width="80"/>
-                <DataGridTextColumn Header="IVA" Binding="{Binding TaxAmount, StringFormat='${0:N0}'}" Width="80"/>
-                <DataGridTextColumn Header="Subtotal" Binding="{Binding Subtotal, StringFormat='${0:N0}'}" Width="100"/>
-                <DataGridTemplateColumn Header="" Width="80">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="Quitar"
-                                    Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
-
-        <!-- Total y pago -->
-        <Border Grid.Row="3" Background="{StaticResource BackgroundLightBrush}" Padding="16" CornerRadius="8" Margin="0,16,0,0"
-        Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <StackPanel Margin="0,0,20,0">
-                    <TextBlock Text="{Binding TotalTaxAmount, StringFormat='IVA incluido: ${0:N0}'}" FontSize="12"
-                   Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right"/>
-                    <TextBlock Text="{Binding TotalAmount, StringFormat='Total: ${0:N0}'}" FontSize="22" FontWeight="Bold"
-                   Foreground="{StaticResource PrimaryDarkBrush}"/>
+                <!-- Encabezado -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                    <TextBlock Text="Punto de venta" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SaleNumber, StringFormat=' — Venta #{0}'}" FontSize="14"
+                               Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    <Button Content="Cancelar venta" Command="{Binding CancelSaleCommand}" Margin="16,0,0,0"
+                            Background="{StaticResource ErrorBrush}" Foreground="White" Padding="12,6" BorderThickness="0" Cursor="Hand"
+                            Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}"/>
                 </StackPanel>
-                <Button Content="Cobrar" Command="{Binding OpenPaymentCommand}"
-            Background="{StaticResource PrimaryBrush}" Foreground="White" Padding="24,10" BorderThickness="0"
-            FontSize="15" Cursor="Hand"/>
-            </StackPanel>
-        </Border>
-        
-        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap"
-                   Visibility="{Binding HasActiveSale, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+
+                <!-- Escaneo + producto en preparación -->
+                <StackPanel Grid.Row="1" Margin="0,0,0,16"
+                            Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                    <Border Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Código de barras:" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <TextBox x:Name="BarcodeBox"
+                                     Text="{Binding BarcodeInput, UpdateSourceTrigger=PropertyChanged}"
+                                     Width="250" Padding="8"
+                                     KeyDown="BarcodeBox_KeyDown"/>
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}"
+                                       VerticalAlignment="Center" Margin="16,0,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Panel del producto escaneado -->
+                    <Border Background="White" Padding="14" CornerRadius="8" Margin="0,12,0,0" BorderThickness="1" BorderBrush="#D1D5DB"
+                            Visibility="{Binding ShowPendingPanel, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding ScannedMedicine.Name}" FontWeight="Bold" FontSize="15" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Unidad de venta:" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,6"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                <RadioButton Content="Pastilla" GroupName="unit"
+                                             IsChecked="{Binding IsPillSelected, Mode=OneWay}"
+                                             Command="{Binding SelectUnitCommand}" CommandParameter="pastilla"
+                                             Visibility="{Binding ScannedMedicine.SellsByPill, Converter={StaticResource BoolToVisibilityConverter}}"
+                                             Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                <RadioButton Content="Sello" GroupName="unit"
+                                             IsChecked="{Binding IsSealSelected, Mode=OneWay}"
+                                             Command="{Binding SelectUnitCommand}" CommandParameter="sello"
+                                             Visibility="{Binding ScannedMedicine.SellsBySeal, Converter={StaticResource BoolToVisibilityConverter}}"
+                                             Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                <RadioButton Content="Caja / Tarro" GroupName="unit"
+                                             IsChecked="{Binding IsBoxSelected, Mode=OneWay}"
+                                             Command="{Binding SelectUnitCommand}" CommandParameter="caja"
+                                             Visibility="{Binding ScannedMedicine.SellsByBox, Converter={StaticResource BoolToVisibilityConverter}}"
+                                             VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="Cantidad:" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <Button Content="−" Command="{Binding DecreaseQuantityCommand}" Width="32" Height="32"
+                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                                <TextBlock Text="{Binding PendingQuantity}" FontSize="16" FontWeight="Bold" Width="46"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Button Content="+" Command="{Binding IncreaseQuantityCommand}" Width="32" Height="32"
+                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Agregar a la venta" Command="{Binding ConfirmAddItemCommand}"
+                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                                        Padding="16,8" Cursor="Hand"/>
+                                <Button Content="Cancelar" Command="{Binding CancelPendingCommand}" Margin="8,0,0,0"
+                                        Background="Transparent" BorderThickness="1" Padding="16,8" Cursor="Hand"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Carrito -->
+                <DataGrid Grid.Row="2" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
+                          Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="2*"/>
+                        <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="*"/>
+                        <DataGridTextColumn Header="Cant." Binding="{Binding Quantity}" Width="70"/>
+                        <DataGridTextColumn Header="Unidad" Binding="{Binding SaleUnit}" Width="80"/>
+                        <DataGridTextColumn Header="Precio unit." Binding="{Binding UnitPrice, StringFormat='${0:N0}'}" Width="95"/>
+                        <DataGridTextColumn Header="IVA" Binding="{Binding TaxAmount, StringFormat='${0:N0}'}" Width="75"/>
+                        <DataGridTextColumn Header="Subtotal" Binding="{Binding Subtotal, StringFormat='${0:N0}'}" Width="100"/>
+                        <DataGridTemplateColumn Header="" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="Cambiar"
+                                            Command="{Binding DataContext.ChangeQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="" Width="70">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="Quitar"
+                                            Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap"
+                           Visibility="{Binding HasActiveSale, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+            </Grid>
+
+            <!-- ===================== COLUMNA DERECHA: resumen ===================== -->
+            <Border Grid.Column="1" Background="{StaticResource PrimaryDarkBrush}" Padding="20"
+                    Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="Resumen de venta" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,16"/>
+
+                    <ItemsControl ItemsSource="{Binding Items}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding MedicineName}" Foreground="White" FontSize="13" TextWrapping="Wrap"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Subtotal, StringFormat='${0:N0}'}" Foreground="White" FontSize="13"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Border Height="1" Background="#4C6EA8" Margin="0,12,0,16"/>
+
+                    <TextBlock Text="{Binding TotalTaxAmount, StringFormat='IVA incluido: ${0:N0}'}" FontSize="12" Foreground="{StaticResource PrimaryLightBrush}" Margin="0,0,0,4"/>
+                    <TextBlock Text="{Binding TotalAmount, StringFormat='Total: ${0:N0}'}" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
+
+                    <Button Content="Cobrar" Command="{Binding OpenPaymentCommand}"
+                            Background="White" Foreground="{StaticResource PrimaryDarkBrush}" BorderThickness="0"
+                            Padding="0,14" FontSize="15" FontWeight="Bold" Cursor="Hand"/>
+
+                    <TextBlock Text="{Binding SuccessMessage}" Foreground="LightGreen" FontWeight="SemiBold"
+                               TextWrapping="Wrap" Margin="0,12,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

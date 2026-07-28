@@ -15,8 +15,8 @@ namespace DrogueriaMickey.Desktop.Views.Sales
         {
             if (e.Key == Key.Enter && DataContext is ViewModels.Sales.SalePosViewModel vm)
             {
-                if (vm.ScanAndAddCommand.CanExecute(null))
-                    vm.ScanAndAddCommand.Execute(null);
+                if (vm.ScanBarcodeCommand.CanExecute(null))
+                    vm.ScanBarcodeCommand.Execute(null);
 
                 BarcodeBox.Focus();
             }

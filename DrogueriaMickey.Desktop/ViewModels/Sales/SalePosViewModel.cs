@@ -8,6 +8,7 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
     public partial class SalePosViewModel : ObservableObject
     {
         private readonly SaleService _saleService;
+        private readonly MedicineService _medicineService;
         private readonly IServiceProvider _services;
         private readonly CashDrawerService _drawerService;
         private readonly ReceiptPrintService _printService;
@@ -16,29 +17,37 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
         [ObservableProperty] private int saleNumber;
         [ObservableProperty] private ObservableCollection<SaleItemDto> items = new();
         [ObservableProperty] private decimal totalAmount;
-        [ObservableProperty] private string barcodeInput = string.Empty;
-        [ObservableProperty] private string quantityInput = "1";
         [ObservableProperty] private decimal totalTaxAmount;
+        [ObservableProperty] private string barcodeInput = string.Empty;
         [ObservableProperty] private string errorMessage = string.Empty;
         [ObservableProperty] private string successMessage = string.Empty;
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private bool hasActiveSale;
-        [ObservableProperty] private ObservableCollection<string> availableUnits = new();
-        [ObservableProperty] private string selectedUnit = "pastilla";
 
-        public SalePosViewModel(SaleService saleService, IServiceProvider services, ReceiptPrintService printService, CashDrawerService drawerService)
+        // Estado del "producto en preparación" antes de confirmarlo a la venta
+        [ObservableProperty] private MedicineDto? scannedMedicine;
+        [ObservableProperty] private string pendingQuantity = "1";
+        [ObservableProperty] private string pendingUnit = "pastilla";
+
+        public bool IsPillSelected => PendingUnit == "pastilla";
+        public bool IsSealSelected => PendingUnit == "sello";
+        public bool IsBoxSelected => PendingUnit == "caja";
+
+        [ObservableProperty] private bool showPendingPanel;
+
+        public SalePosViewModel(SaleService saleService, MedicineService medicineService, IServiceProvider services, ReceiptPrintService printService, CashDrawerService drawerService)
         {
             _saleService = saleService;
+            _medicineService = medicineService;
             _services = services;
             _printService = printService;
             _drawerService = drawerService;
-            AvailableUnits = new ObservableCollection<string> { "pastilla", "sello", "caja" };
-            SelectedUnit = "pastilla";
             _ = StartSale();
         }
 
-        // RF-031 + RF-032: crea una venta nueva. Si no hay caja abierta,
-        // el backend responde 409 y se lo mostramos tal cual al cajero.
+        // RF-031 + RF-032: crea una venta nueva (o retoma la que estaba en
+        // progreso). Si no hay caja abierta, el backend responde 409 y se
+        // lo mostramos tal cual al cajero.
         [RelayCommand]
         private async Task StartSale()
         {
@@ -57,16 +66,17 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
 
             SaleId = result.Data.Id;
             SaleNumber = result.Data.SaleNumber;
-            Items = new ObservableCollection<SaleItemDto>(result.Data.Items); // ya viene con lo que tenía antes, si retomó
+            Items = new ObservableCollection<SaleItemDto>(result.Data.Items);
             TotalAmount = result.Data.TotalAmount;
+            TotalTaxAmount = result.Data.TotalTaxAmount;
             HasActiveSale = true;
         }
 
-        // RF-033: agrega un producto por código de barras (lector físico
-        // o tecleado). El lote se asigna automáticamente por FEFO en el
-        // backend — aquí solo se muestra el resultado.
+        // RF-033: busca el medicamento por código de barras, SIN agregarlo
+        // todavía — solo lo prepara para que el cajero elija unidad y
+        // cantidad con los botones +/-.
         [RelayCommand]
-        private async Task ScanAndAdd()
+        private async Task ScanBarcode()
         {
             ErrorMessage = string.Empty;
 
@@ -79,26 +89,93 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
             if (string.IsNullOrWhiteSpace(BarcodeInput))
                 return;
 
-            if (!int.TryParse(QuantityInput, out var qty) || qty <= 0)
+            IsBusy = true;
+            var result = await _medicineService.GetByBarcodeAsync(BarcodeInput.Trim());
+            IsBusy = false;
+
+            BarcodeInput = string.Empty;
+
+            if (!result.Success || result.Data == null)
+            {
+                ErrorMessage = "No se encontró ningún medicamento con ese código";
+                return;
+            }
+
+            ScannedMedicine = result.Data;
+            PendingQuantity = "1";
+
+            // Preselecciona la primera unidad realmente disponible para
+            // este medicamento, en vez de asumir "pastilla" por defecto.
+            if (result.Data.SellsByPill) PendingUnit = "pastilla";
+            else if (result.Data.SellsBySeal) PendingUnit = "sello";
+            else if (result.Data.SellsByBox) PendingUnit = "caja";
+
+            ShowPendingPanel = true;
+        }
+
+        partial void OnPendingUnitChanged(string value)   // <- AQUÍ, método aparte
+        {
+            OnPropertyChanged(nameof(IsPillSelected));
+            OnPropertyChanged(nameof(IsSealSelected));
+            OnPropertyChanged(nameof(IsBoxSelected));
+        }
+
+
+        [RelayCommand]
+        private void IncreaseQuantity()
+        {
+            if (int.TryParse(PendingQuantity, out var qty))
+                PendingQuantity = (qty + 1).ToString();
+        }
+
+        [RelayCommand]
+        private void DecreaseQuantity()
+        {
+            if (int.TryParse(PendingQuantity, out var qty) && qty > 1)
+                PendingQuantity = (qty - 1).ToString();
+        }
+
+        [RelayCommand]
+        private void SelectUnit(string unit)
+        {
+            PendingUnit = unit;
+        }
+
+        // Confirma el producto preparado y lo agrega a la venta real
+        // (backend) — recién aquí se llama a AddItem.
+        [RelayCommand]
+        private async Task ConfirmAddItem()
+        {
+            ErrorMessage = string.Empty;
+
+            if (SaleId == null || ScannedMedicine == null) return;
+
+            if (!int.TryParse(PendingQuantity, out var qty) || qty <= 0)
             {
                 ErrorMessage = "La cantidad debe ser un número entero mayor a cero";
                 return;
             }
 
             IsBusy = true;
-            var result = await _saleService.AddItemByBarcodeAsync(SaleId, BarcodeInput.Trim(), qty, SelectedUnit);
+            var result = await _saleService.AddItemByBarcodeAsync(SaleId, ScannedMedicine.Barcode, qty, PendingUnit);
             IsBusy = false;
 
             if (!result.Success || result.Data == null)
             {
                 ErrorMessage = result.ErrorMessage ?? "No se pudo agregar el producto";
-                BarcodeInput = string.Empty;
                 return;
             }
 
             ApplySaleUpdate(result.Data);
-            BarcodeInput = string.Empty;
-            QuantityInput = "1";
+            CancelPending();
+        }
+
+        [RelayCommand]
+        private void CancelPending()
+        {
+            ScannedMedicine = null;
+            ShowPendingPanel = false;
+            PendingQuantity = "1";
         }
 
         // RF-035
@@ -120,6 +197,32 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
             ApplySaleUpdate(result.Data);
         }
 
+        // RF-034: modifica la cantidad de un producto ya agregado.
+        [RelayCommand]
+        private async Task ChangeQuantity(SaleItemDto item)
+        {
+            if (SaleId == null) return;
+
+            var input = Microsoft.VisualBasic.Interaction.InputBox(
+                $"Nueva cantidad para {item.MedicineName}:", "Modificar cantidad", item.Quantity.ToString());
+
+            if (!int.TryParse(input, out var newQty) || newQty <= 0)
+                return;
+
+            IsBusy = true;
+            var result = await _saleService.UpdateItemQuantityAsync(SaleId, item.Id, newQty);
+            IsBusy = false;
+
+            if (!result.Success || result.Data == null)
+            {
+                ErrorMessage = result.ErrorMessage ?? "No se pudo actualizar la cantidad";
+                return;
+            }
+
+            ApplySaleUpdate(result.Data);
+        }
+
+        // RF-036
         [RelayCommand]
         private async Task CancelSale()
         {
@@ -143,9 +246,10 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
 
             ResetSale();
             SuccessMessage = "Venta cancelada correctamente";
-            await StartSale(); // inicia la siguiente venta de una vez, sin pasos extra
+            await StartSale();
         }
 
+        // RF-039/040/041/043: abre el diálogo de pago.
         [RelayCommand]
         private void OpenPayment()
         {
@@ -157,7 +261,7 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
                 return;
             }
 
-            var dialogVm = new ViewModels.Sales.PaymentDialogViewModel(_saleService, _printService, _drawerService, SaleId, TotalAmount);
+            var dialogVm = new PaymentDialogViewModel(_saleService, _printService, _drawerService, SaleId, TotalAmount);
             var dialog = new Views.Sales.PaymentDialog(dialogVm)
             {
                 Owner = System.Windows.Application.Current.MainWindow

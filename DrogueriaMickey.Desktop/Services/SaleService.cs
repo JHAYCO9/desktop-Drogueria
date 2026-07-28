@@ -55,6 +55,20 @@ namespace DrogueriaMickey.Desktop.Services
         public decimal Subtotal { get; set; }
     }
 
+    public class SalesFilteredResponseDto
+    {
+        public bool Success { get; set; }
+        public string? Message { get; set; }
+        public SalesFilteredDataDto? Data { get; set; }
+    }
+
+    public class SalesFilteredDataDto
+    {
+        public int Total { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public List<SaleListItemDto> Sales { get; set; } = new();
+    }
     public class ReceiptDto
     {
         public int SaleNumber { get; set; }
@@ -319,6 +333,96 @@ namespace DrogueriaMickey.Desktop.Services
             catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
             {
                 return new ApiResult<FinalizeCashResultDto> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
+        }
+
+        // RF-034
+        public async Task<ApiResult<SaleDto>> UpdateItemQuantityAsync(string saleId, string itemId, int newQuantity)
+        {
+            try
+            {
+                AttachToken();
+                var response = await _httpClient.PutAsJsonAsync($"sales/{saleId}/items/{itemId}", new
+                {
+                    quantity = newQuantity
+                }, JsonOptions.Default);
+
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<SaleDto> { Success = false, ErrorMessage = await ReadError(response) };
+
+                var data = await response.Content.ReadFromJsonAsync<SaleDto>(JsonOptions.Default);
+                return new ApiResult<SaleDto> { Success = true, Data = data };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<SaleDto> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
+        }
+
+        // RF-044: filtro combinado (número de venta, fecha, usuario) — usado
+        // junto con el rango de fechas de RF-047 en la misma vista.
+        public async Task<ApiResult<SalesFilteredDataDto>> ListSalesFilteredAsync(string? startDate = null, string? endDate = null, string? userId = null)
+        {
+            try
+            {
+                AttachToken();
+                var query = new List<string>();
+                if (!string.IsNullOrWhiteSpace(startDate)) query.Add($"start_date={startDate}");
+                if (!string.IsNullOrWhiteSpace(endDate)) query.Add($"end_date={endDate}");
+                if (!string.IsNullOrWhiteSpace(userId)) query.Add($"user_id={userId}");
+                var queryString = query.Count > 0 ? "?" + string.Join("&", query) : "";
+
+                var response = await _httpClient.GetAsync($"sales{queryString}");
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<SalesFilteredDataDto> { Success = false, ErrorMessage = await ReadError(response) };
+
+                var wrapper = await response.Content.ReadFromJsonAsync<SalesFilteredResponseDto>(JsonOptions.Default);
+                return new ApiResult<SalesFilteredDataDto> { Success = true, Data = wrapper?.Data };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<SalesFilteredDataDto> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
+        }
+
+        // RF-045: detalle completo de una venta (reutiliza GetSale).
+        public async Task<ApiResult<SaleDto>> GetSaleDetailAsync(string saleId)
+        {
+            try
+            {
+                AttachToken();
+                var response = await _httpClient.GetAsync($"sales/{saleId}");
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<SaleDto> { Success = false, ErrorMessage = await ReadError(response) };
+
+                var data = await response.Content.ReadFromJsonAsync<SaleDto>(JsonOptions.Default);
+                return new ApiResult<SaleDto> { Success = true, Data = data };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<SaleDto> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
+        }
+
+        // RF-046: anular una venta finalizada, con motivo obligatorio.
+        public async Task<ApiResult<object>> VoidSaleAsync(string saleId, string reason)
+        {
+            try
+            {
+                AttachToken();
+                var response = await _httpClient.PostAsJsonAsync($"sales/{saleId}/void", new
+                {
+                    reason
+                }, JsonOptions.Default);
+
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<object> { Success = false, ErrorMessage = await ReadError(response) };
+
+                return new ApiResult<object> { Success = true };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<object> { Success = false, ErrorMessage = ConnectionErrorMessage };
             }
         }
 

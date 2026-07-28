@@ -10,6 +10,8 @@ namespace DrogueriaMickey.Desktop
     public partial class App : Application
     {
         public static IServiceProvider ServiceProvider { get; private set; } = null!;
+        private bool _isShowingError;
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -19,10 +21,21 @@ namespace DrogueriaMickey.Desktop
             // aplicación sigue viva en vez de cerrarse de golpe.
             DispatcherUnhandledException += (s, args) =>
             {
-                System.Windows.MessageBox.Show(
-                    $"Ocurrió un error inesperado:\n\n{args.Exception.Message}\n\nLa aplicación continuará funcionando.",
-                    "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
-                args.Handled = true; // evita que la app se cierre
+                args.Handled = true; // siempre marcamos manejado primero, para no tumbar la app
+
+                if (_isShowingError) return; // evita la cascada: si ya hay un diálogo abierto, ignora el resto
+
+                _isShowingError = true;
+                try
+                {
+                    System.Windows.MessageBox.Show(
+                        $"Ocurrió un error inesperado:\n\n{args.Exception.Message}\n\nLa aplicación continuará funcionando.",
+                        "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                }
+                finally
+                {
+                    _isShowingError = false;
+                }
             };
 
             AppDomain.CurrentDomain.UnhandledException += (s, args) =>
@@ -65,6 +78,7 @@ namespace DrogueriaMickey.Desktop
             services.AddTransient<ViewModels.Users.UsersListViewModel>();
             services.AddTransient<ViewModels.Users.UserEditViewModel>();
             services.AddSingleton<ReceiptPrintService>();
+            services.AddTransient<ViewModels.Sales.SaleDetailViewModel>(); 
 
             ServiceProvider = services.BuildServiceProvider();
 
