@@ -14,11 +14,14 @@ namespace DrogueriaMickey.Desktop.Services
         public string BatchId { get; set; } = string.Empty;
         public string BatchCode { get; set; } = string.Empty;
         public int Quantity { get; set; }
+        public string SaleUnit { get; set; } = string.Empty;
         public decimal UnitPrice { get; set; }
         public decimal Subtotal { get; set; }
         public decimal TaxAmount { get; set; }
-        public string SaleUnit { get; set; } = string.Empty;
+        public int ReturnedQuantity { get; set; } // nuevo
 
+        public bool IsFullyReturned => ReturnedQuantity >= Quantity;
+        public string ReturnStatusLabel => IsFullyReturned ? "Devuelto" : (ReturnedQuantity > 0 ? $"Parcial ({ReturnedQuantity}/{Quantity})" : "");
     }
 
     public class SaleListItemDto
@@ -30,6 +33,9 @@ namespace DrogueriaMickey.Desktop.Services
         public string? PaymentMethod { get; set; }
         public string CashierName { get; set; } = string.Empty;
         public string CreatedAt { get; set; } = string.Empty;
+        public bool HasReturns { get; set; } // nuevo
+
+        public string StatusDisplay => HasReturns ? $"{Status} (con devolución)" : Status;
     }
 
     public class SalesDateRangeSummaryDto

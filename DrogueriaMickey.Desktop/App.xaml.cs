@@ -78,7 +78,16 @@ namespace DrogueriaMickey.Desktop
             services.AddTransient<ViewModels.Users.UsersListViewModel>();
             services.AddTransient<ViewModels.Users.UserEditViewModel>();
             services.AddSingleton<ReceiptPrintService>();
-            services.AddTransient<ViewModels.Sales.SaleDetailViewModel>(); 
+            services.AddTransient<ViewModels.Sales.SaleDetailViewModel>();
+            services.AddHttpClient<CashRegisterService>();
+            services.AddTransient<ViewModels.CashRegister.CashRegisterViewModel>();
+            services.AddTransient<ViewModels.CashRegister.CashMovementsViewModel>();
+            services.AddHttpClient<DashboardService>();
+            services.AddTransient<ViewModels.Dashboard.DashboardViewModel>();
+            services.AddSingleton<ReporteZPrintService>();
+            services.AddHttpClient<ReturnService>();
+            services.AddTransient<ViewModels.Returns.ReturnCreateViewModel>();
+            services.AddTransient<ViewModels.Returns.ReturnsHistoryViewModel>();
 
             ServiceProvider = services.BuildServiceProvider();
 

@@ -1,11 +1,41 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Returns.ReturnCreateView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             mc:Ignorable="d"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel MaxWidth="600">
+        <TextBlock Text="Registrar devolución" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
 
-    </Grid>
+        <Border Background="{StaticResource BackgroundLightBrush}" Padding="16" CornerRadius="8" Margin="0,0,0,16"
+                Visibility="{Binding LoadedSale, Converter={StaticResource NullToVisibilityConverter}}">
+            <StackPanel>
+                <TextBlock Text="{Binding LoadedSale.SaleNumber, StringFormat='Venta #{0}'}" FontWeight="Bold" FontSize="15"/>
+                <TextBlock Text="{Binding LoadedSale.CreatedAt}" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="Producto a devolver"/>
+        <ComboBox ItemsSource="{Binding SaleItems}" SelectedItem="{Binding SelectedItem}" Margin="0,4,0,14" Padding="8">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding MedicineName}"/>
+                        <TextBlock Text="{Binding ReturnStatusLabel, StringFormat=' — {0}'}" Foreground="{StaticResource ErrorBrush}" FontWeight="SemiBold"
+                           Visibility="{Binding ReturnStatusLabel, Converter={StaticResource StringToVisibilityConverter}}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <TextBlock Text="Cantidad"/>
+        <TextBox Text="{Binding QuantityInput, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,14" Padding="8" Width="120" HorizontalAlignment="Left"/>
+
+        <TextBlock Text="Motivo de la devolución"/>
+        <TextBox Text="{Binding ReasonInput, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,16" Padding="8"/>
+
+        <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+        <TextBlock Text="{Binding SuccessMessage}" Foreground="Green" TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+        <Button Content="Confirmar devolución" Command="{Binding RegisterReturnCommand}"
+                Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                Padding="0,12" FontWeight="Bold" Cursor="Hand"/>
+    </StackPanel>
 </UserControl>

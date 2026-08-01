@@ -96,5 +96,14 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
             var view = new Views.Sales.SaleDetailView { DataContext = vm };
             _navigation.NavigateTo(view);
         }
+
+        [RelayCommand]
+        private void CreateReturn(SaleListItemDto sale)
+        {
+            var vm = _services.GetRequiredService<ViewModels.Returns.ReturnCreateViewModel>();
+            vm.InitializeWithSaleId(sale.Id);
+            var view = new Views.Returns.ReturnCreateView { DataContext = vm };
+            _navigation.NavigateTo(view);
+        }
     }
 }

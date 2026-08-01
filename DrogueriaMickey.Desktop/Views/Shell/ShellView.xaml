@@ -38,19 +38,21 @@
             <Button Content="Dashboard" Command="{Binding NavigateToDashboardCommand}" Style="{StaticResource MenuButtonStyle}"/>
             <Button Content="Ventas" Command="{Binding NavigateToSalesCommand}" Style="{StaticResource MenuButtonStyle}"/>
             <Button Content="Caja" Command="{Binding NavigateToCashRegisterCommand}" Style="{StaticResource MenuButtonStyle}"/>
+            <Button Content="Devoluciones" Command="{Binding NavigateToReturnsHistoryCommand}" Style="{StaticResource MenuButtonStyle}"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
             <Button Content="Medicamentos" Command="{Binding NavigateToMedicinesCommand}" Style="{StaticResource MenuButtonStyle}"/>
-<Button Content="Movimientos" Command="{Binding NavigateToMovementsCommand}"
-        Style="{StaticResource MenuButtonStyle}"
-        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-<Button Content="Historial existencias" Command="{Binding NavigateToStockHistoryCommand}" Style="{StaticResource MenuButtonStyle}"
-        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-<Button Content="Alertas" Command="{Binding NavigateToStockAlertsCommand}" Style="{StaticResource MenuButtonStyle}"/>
+            <Button Content="Movimientos" Command="{Binding NavigateToMovementsCommand}"
+                    Style="{StaticResource MenuButtonStyle}"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <Button Content="Historial existencias" Command="{Binding NavigateToStockHistoryCommand}" Style="{StaticResource MenuButtonStyle}"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <Button Content="Alertas" Command="{Binding NavigateToStockAlertsCommand}" Style="{StaticResource MenuButtonStyle}"/>
             <Button Content="Usuarios" Command="{Binding NavigateToUsersCommand}" Style="{StaticResource MenuButtonStyle}"
                     Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                    <Button Content="Historial de ventas" Command="{Binding NavigateToSalesHistoryCommand}" Style="{StaticResource MenuButtonStyle}"
-        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-<Button Content="Auditoría" Command="{Binding NavigateToAuditLogCommand}" Style="{StaticResource MenuButtonStyle}"
-        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <Button Content="Historial de ventas" Command="{Binding NavigateToSalesHistoryCommand}" Style="{StaticResource MenuButtonStyle}"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <Button Content="Auditoría" Command="{Binding NavigateToAuditLogCommand}" Style="{StaticResource MenuButtonStyle}"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </StackPanel>
 
         <!-- Contenido -->

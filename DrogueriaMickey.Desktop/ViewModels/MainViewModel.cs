@@ -41,10 +41,19 @@ namespace DrogueriaMickey.Desktop.ViewModels
         [RelayCommand]
         private void NavigateToDashboard()
         {
-            var view = new Views.Dashboard.DashboardView(); // sin ViewModel propio todavía, ok por ahora
+            var vm = _services.GetRequiredService<ViewModels.Dashboard.DashboardViewModel>();
+            var view = new Views.Dashboard.DashboardView { DataContext = vm };
             Navigation.NavigateTo(view);
         }
-            
+
+        [RelayCommand]
+        private void NavigateToReturnsHistory()
+        {
+            var vm = _services.GetRequiredService<ViewModels.Returns.ReturnsHistoryViewModel>();
+            var view = new Views.Returns.ReturnsHistoryView { DataContext = vm };
+            Navigation.NavigateTo(view);
+        }
+
         [RelayCommand]
         private void NavigateToUsers()
         {
@@ -86,7 +95,8 @@ namespace DrogueriaMickey.Desktop.ViewModels
         [RelayCommand]
         private void NavigateToCashRegister()
         {
-            var view = new Views.CashRegister.CashStatusView();
+            var vm = _services.GetRequiredService<ViewModels.CashRegister.CashRegisterViewModel>();
+            var view = new Views.CashRegister.CashRegisterView { DataContext = vm };
             Navigation.NavigateTo(view);
         }
 
