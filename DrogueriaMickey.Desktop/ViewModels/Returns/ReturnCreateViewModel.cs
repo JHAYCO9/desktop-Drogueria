@@ -15,7 +15,8 @@ namespace DrogueriaMickey.Desktop.ViewModels.Returns
         [ObservableProperty] private ObservableCollection<SaleItemDto> saleItems = new();
         [ObservableProperty] private SaleItemDto? selectedItem;
         [ObservableProperty] private string quantityInput = "1";
-        [ObservableProperty] private string reasonInput = string.Empty;
+        [ObservableProperty] private ObservableCollection<string> availableReasons = new(Services.ReturnService.ValidReasons);
+        [ObservableProperty] private string selectedReason = Services.ReturnService.ValidReasons[0];
         [ObservableProperty] private string errorMessage = string.Empty;
         [ObservableProperty] private string successMessage = string.Empty;
         [ObservableProperty] private bool isBusy;
@@ -81,14 +82,14 @@ namespace DrogueriaMickey.Desktop.ViewModels.Returns
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(ReasonInput))
+            if (string.IsNullOrWhiteSpace(SelectedReason))
             {
-                ErrorMessage = "El motivo de la devolución es obligatorio";
+                ErrorMessage = "Selecciona el motivo de la devolución";
                 return;
             }
 
             IsBusy = true;
-            var result = await _returnService.RegisterReturnAsync(LoadedSale.Id, SelectedItem.Id, qty, ReasonInput);
+            var result = await _returnService.RegisterReturnAsync(LoadedSale.Id, SelectedItem.Id, qty, SelectedReason);
             IsBusy = false;
 
             if (!result.Success)
@@ -99,7 +100,7 @@ namespace DrogueriaMickey.Desktop.ViewModels.Returns
 
             SuccessMessage = "Devolución registrada correctamente. El inventario ya fue actualizado.";
             QuantityInput = "1";
-            ReasonInput = string.Empty;
+            SelectedReason = Services.ReturnService.ValidReasons[0];
             SelectedItem = null;
 
             // Recarga la venta para reflejar el nuevo estado de devolución

@@ -1,8 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 using DrogueriaMickey.Desktop.Navigation;
 using DrogueriaMickey.Desktop.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
 {
@@ -17,16 +18,25 @@ namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
         private string? _currentCashRegisterId;
 
         [ObservableProperty] private bool isOpen;
-        [ObservableProperty] private decimal openingAmount;
-        [ObservableProperty] private decimal currentBalance;
-        [ObservableProperty] private string openedAt = string.Empty;
-        [ObservableProperty] private string openedByName = string.Empty;
-        public string StatusLabel => IsOpen ? "Abierta" : "Cerrada";
+        [ObservableProperty] private decimal montoInicial;
+        [ObservableProperty] private string fechaApertura = string.Empty;
+        [ObservableProperty] private string abiertoPor = string.Empty;
+        [ObservableProperty] private decimal totalVentasEfectivo;
+        [ObservableProperty] private decimal totalVentasOtrosMedios;
+        [ObservableProperty] private decimal totalIngresosManual;
+        [ObservableProperty] private decimal totalEgresosManual;
+        [ObservableProperty] private decimal saldoTeorico;
+        [ObservableProperty] private ObservableCollection<ManualMovementItemDto> listaMovimientos = new();
 
-        // RF-048: formulario de apertura
+        // RF-048: apertura
         [ObservableProperty] private string openingAmountInput = string.Empty;
 
-        // RF-052/053/054: formulario de cierre
+        // RF-018: movimiento manual
+        [ObservableProperty] private string manualMovementType = "ingreso_manual";
+        [ObservableProperty] private string manualAmountInput = string.Empty;
+        [ObservableProperty] private string manualReasonInput = string.Empty;
+
+        // RF-052/053/054: cierre
         [ObservableProperty] private string countedAmountInput = string.Empty;
         [ObservableProperty] private string differenceReasonInput = string.Empty;
         [ObservableProperty] private bool showCloseConfirmation;
@@ -38,8 +48,7 @@ namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
         [ObservableProperty] private string successMessage = string.Empty;
         [ObservableProperty] private bool isBusy;
 
-        [ObservableProperty] private decimal expectedCash;
-        [ObservableProperty] private decimal totalNequiSales;
+        public string StatusLabel => IsOpen ? "Abierta" : "Cerrada";
 
         public CashRegisterViewModel(
             CashRegisterService cashService, IServiceProvider services, NavigationService navigation,
@@ -54,21 +63,13 @@ namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
             _ = LoadStatus();
         }
 
-        public CashRegisterViewModel(CashRegisterService cashService, IServiceProvider services, NavigationService navigation)
-        {
-            _cashService = cashService;
-            _services = services;
-            _navigation = navigation;
-            _ = LoadStatus();
-        }
-
-        // RF-049
+        // RF-019: estado detallado en tiempo real.
         [RelayCommand]
         private async Task LoadStatus()
         {
             ErrorMessage = string.Empty;
             IsBusy = true;
-            var result = await _cashService.GetStatusAsync();
+            var result = await _cashService.GetDetailedStatusAsync();
             IsBusy = false;
 
             if (!result.Success || result.Data == null)
@@ -77,16 +78,20 @@ namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
                 return;
             }
 
-            IsOpen = result.Data.IsOpen;
-            _currentCashRegisterId = result.Data.Id;
-            OnPropertyChanged(nameof(StatusLabel));
-            ExpectedCash = result.Data.ExpectedCash;
-            TotalNequiSales = result.Data.TotalNequiSales;
-            OpeningAmount = result.Data.OpeningAmount;
-            CurrentBalance = result.Data.CurrentBalance;
-            OpenedAt = result.Data.OpenedAt ?? string.Empty;
-            OpenedByName = result.Data.OpenedByName ?? string.Empty;
+            var d = result.Data;
+            IsOpen = d.IsOpen;
+            _currentCashRegisterId = d.SessionId;
+            MontoInicial = d.MontoInicial;
+            FechaApertura = d.FechaApertura ?? string.Empty;
+            AbiertoPor = d.AbiertoPor ?? string.Empty;
+            TotalVentasEfectivo = d.TotalVentasEfectivo;
+            TotalVentasOtrosMedios = d.TotalVentasOtrosMedios;
+            TotalIngresosManual = d.TotalIngresosManual;
+            TotalEgresosManual = d.TotalEgresosManual;
+            SaldoTeorico = d.SaldoTeorico;
+            ListaMovimientos = new ObservableCollection<ManualMovementItemDto>(d.ListaMovimientos);
             ShowCloseConfirmation = false;
+            OnPropertyChanged(nameof(StatusLabel));
         }
 
         // RF-048
@@ -117,7 +122,41 @@ namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
             await LoadStatus();
         }
 
-        // Muestra el resumen antes de confirmar el cierre (RF-052/053)
+        // RF-018: registrar ingreso/egreso manual.
+        [RelayCommand]
+        private async Task RegisterManualMovement()
+        {
+            ErrorMessage = string.Empty;
+            SuccessMessage = string.Empty;
+
+            if (!decimal.TryParse(ManualAmountInput, out var amount) || amount <= 0)
+            {
+                ErrorMessage = "El monto debe ser un número mayor a cero";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(ManualReasonInput) || ManualReasonInput.Length < 3)
+            {
+                ErrorMessage = "La justificación debe tener al menos 3 caracteres";
+                return;
+            }
+
+            IsBusy = true;
+            var result = await _cashService.RegisterManualMovementAsync(ManualMovementType, amount, ManualReasonInput);
+            IsBusy = false;
+
+            if (!result.Success)
+            {
+                ErrorMessage = result.ErrorMessage ?? "No se pudo registrar el movimiento";
+                return;
+            }
+
+            SuccessMessage = "Movimiento registrado correctamente";
+            ManualAmountInput = string.Empty;
+            ManualReasonInput = string.Empty;
+            await LoadStatus();
+        }
+
         [RelayCommand]
         private void PreviewClose()
         {
@@ -129,13 +168,12 @@ namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
                 return;
             }
 
-            ExpectedAmountPreview = ExpectedCash; // <- ya no CurrentBalance
-            DifferencePreview = counted - ExpectedCash;
+            ExpectedAmountPreview = SaldoTeorico;
+            DifferencePreview = counted - SaldoTeorico;
             HasDifference = DifferencePreview != 0;
             ShowCloseConfirmation = true;
         }
 
-        // RF-052 + RF-053 + RF-054
         [RelayCommand]
         private async Task ConfirmClose()
         {
@@ -147,12 +185,6 @@ namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
                 return;
             }
 
-            if (HasDifference && string.IsNullOrWhiteSpace(DifferenceReasonInput))
-            {
-                ErrorMessage = "Debes indicar el motivo de la diferencia antes de cerrar la caja";
-                return;
-            }
-
             var confirm = System.Windows.MessageBox.Show(
                 $"¿Confirmas el cierre de caja?\n\nEsperado: ${ExpectedAmountPreview:N0}\nContado: ${counted:N0}\nDiferencia: ${DifferencePreview:N0}",
                 "Confirmar cierre de caja", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
@@ -161,7 +193,7 @@ namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
 
             IsBusy = true;
 
-            var cashRegisterId = _currentCashRegisterId; // ver nota abajo
+            var cashRegisterId = _currentCashRegisterId;
             var result = await _cashService.CloseAsync(counted, DifferenceReasonInput);
 
             if (!result.Success || result.Data == null)
@@ -171,36 +203,27 @@ namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
                 return;
             }
 
-            SuccessMessage = $"Caja cerrada. Diferencia: ${result.Data.DifferenceAmount:N0}";
+            var discrepancyLabel = result.Data.DiscrepancyType switch
+            {
+                "EXCESS" => "Sobrante",
+                "DEFICIT" => "Faltante",
+                _ => "Cuadre exacto"
+            };
+            SuccessMessage = $"Caja cerrada. {discrepancyLabel}: ${result.Data.DifferenceAmount:N0}";
             CountedAmountInput = string.Empty;
             DifferenceReasonInput = string.Empty;
             ShowCloseConfirmation = false;
 
-            // Genera e imprime el Reporte Z automáticamente, igual que un
-            // comprobante — y abre la caja registradora física, ya que el
-            // cierre implica que el cajero va a retirar/organizar el efectivo.
             if (!string.IsNullOrEmpty(cashRegisterId))
             {
                 var reportResult = await _cashService.GetReporteZAsync(cashRegisterId);
                 if (reportResult.Success && reportResult.Data != null)
                 {
-                    try
-                    {
-                        _reporteZPrintService.Print(reportResult.Data);
-                    }
-                    catch (Exception ex)
-                    {
-                        SuccessMessage += $"\n(No se pudo imprimir el Reporte Z: {ex.Message})";
-                    }
+                    try { _reporteZPrintService.Print(reportResult.Data); }
+                    catch (Exception ex) { SuccessMessage += $"\n(No se pudo imprimir el Reporte Z: {ex.Message})"; }
 
-                    try
-                    {
-                        _drawerService.OpenDrawer();
-                    }
-                    catch (Exception ex)
-                    {
-                        SuccessMessage += $"\n(No se pudo abrir la caja: {ex.Message})";
-                    }
+                    try { _drawerService.OpenDrawer(); }
+                    catch (Exception ex) { SuccessMessage += $"\n(No se pudo abrir la caja: {ex.Message})"; }
                 }
             }
 
@@ -217,19 +240,27 @@ namespace DrogueriaMickey.Desktop.ViewModels.CashRegister
         }
 
         [RelayCommand]
-        private void GoToSales()
-        {
-            var vm = _services.GetRequiredService<ViewModels.Sales.SalePosViewModel>();
-            var view = new Views.Sales.SalePosView { DataContext = vm };
-            _navigation.NavigateTo(view);
-        }
-
-        // RF-051
-        [RelayCommand]
         private void ViewMovements()
         {
             var vm = _services.GetRequiredService<CashMovementsViewModel>();
             var view = new Views.CashRegister.CashMovementsView { DataContext = vm };
+            _navigation.NavigateTo(view);
+        }
+
+        // RF-056
+        [RelayCommand]
+        private void ViewHistory()
+        {
+            var vm = _services.GetRequiredService<CashHistoryViewModel>();
+            var view = new Views.CashRegister.CashHistoryView { DataContext = vm };
+            _navigation.NavigateTo(view);
+        }
+
+        [RelayCommand]
+        private void GoToSales()
+        {
+            var vm = _services.GetRequiredService<ViewModels.Sales.SalePosViewModel>();
+            var view = new Views.Sales.SalePosView { DataContext = vm };
             _navigation.NavigateTo(view);
         }
     }

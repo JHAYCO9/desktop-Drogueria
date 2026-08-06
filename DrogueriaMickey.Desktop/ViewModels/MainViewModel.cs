@@ -22,6 +22,8 @@ namespace DrogueriaMickey.Desktop.ViewModels
         private readonly SyncService _syncService;
         public SyncService Sync => _syncService;
 
+        public ViewModels.Bot.BotChatViewModel Bot { get; }
+
         public MainViewModel(IServiceProvider services, SessionService session, NavigationService navigation, AuthService authService, SyncService syncService)
         {
             _services = services;
@@ -29,6 +31,7 @@ namespace DrogueriaMickey.Desktop.ViewModels
             Navigation = navigation;
             _authService = authService;
             _syncService = syncService;
+            Bot = _services.GetRequiredService<ViewModels.Bot.BotChatViewModel>();
             NavigateToDashboard();
         }
 
@@ -43,6 +46,14 @@ namespace DrogueriaMickey.Desktop.ViewModels
         {
             var vm = _services.GetRequiredService<ViewModels.Dashboard.DashboardViewModel>();
             var view = new Views.Dashboard.DashboardView { DataContext = vm };
+            Navigation.NavigateTo(view);
+        }
+
+        [RelayCommand]
+        private void NavigateToSettings()
+        {
+            var vm = _services.GetRequiredService<ViewModels.Settings.SettingsViewModel>();
+            var view = new Views.Settings.SettingsView { DataContext = vm };
             Navigation.NavigateTo(view);
         }
 
@@ -135,6 +146,14 @@ namespace DrogueriaMickey.Desktop.ViewModels
             var vm = _services.GetRequiredService<ViewModels.Inventory.InventoryMovementsViewModel>();
             vm.InitializeMovements();
             var view = new Views.Inventory.InventoryMovementsView { DataContext = vm };
+            Navigation.NavigateTo(view);
+        }
+
+        [RelayCommand]
+        private void NavigateToReports()
+        {
+            var vm = _services.GetRequiredService<ViewModels.Reports.ReportsViewModel>();
+            var view = new Views.Reports.ReportsView { DataContext = vm };
             Navigation.NavigateTo(view);
         }
 

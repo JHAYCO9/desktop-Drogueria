@@ -9,12 +9,24 @@
         <TextBlock Grid.Row="0" Text="Historial de devoluciones" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
         <DataGrid Grid.Row="1" ItemsSource="{Binding Returns}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Venta" Binding="{Binding SaleNumber}" Width="80"/>
-                <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="200"/>
-                <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="90"/>
-                <DataGridTextColumn Header="Motivo" Binding="{Binding Reason}" Width="200"/>
-                <DataGridTextColumn Header="Usuario" Binding="{Binding Username}" Width="150"/>
-                <DataGridTextColumn Header="Fecha" Binding="{Binding CreatedAt}" Width="180"/>
+                <DataGridTextColumn Header="Venta" Binding="{Binding SaleNumber}" Width="70"/>
+                <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="180"/>
+                <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="80"/>
+                <DataGridTextColumn Header="Motivo" Binding="{Binding Reason}" Width="180"/>
+                <DataGridTextColumn Header="Usuario" Binding="{Binding Username}" Width="130"/>
+                <DataGridTextColumn Header="Fecha" Binding="{Binding CreatedAt}" Width="150"/>
+                <DataGridTextColumn Header="Estado" Binding="{Binding IsVoided, Converter={StaticResource ActiveToLabelConverter}}" Width="90"/>
+                <DataGridTemplateColumn Header="" Width="90">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Anular"
+                                    Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    IsEnabled="{Binding IsVoided, Converter={StaticResource InverseBoolConverter}}"
+                                    Command="{Binding DataContext.VoidReturnCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

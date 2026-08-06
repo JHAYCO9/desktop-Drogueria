@@ -159,7 +159,63 @@ namespace DrogueriaMickey.Desktop.Services
             DrawCenter("GRACIAS POR SU COMPRA", _normalFont);
         }
     }
-        public class ReceiptPrintService
+
+    public class DailyReportPrintService
+    {
+        private readonly GdiFont _boldFont = new GdiFont("Consolas", 10, GdiFontStyle.Bold);
+        private readonly GdiFont _normalFont = new GdiFont("Consolas", 9, GdiFontStyle.Regular);
+
+        private DailySalesReportDto? _report;
+
+        public void Print(DailySalesReportDto report, string? printerName = null)
+        {
+            _report = report;
+            var doc = new PrintDocument();
+            if (!string.IsNullOrWhiteSpace(printerName))
+                doc.PrinterSettings.PrinterName = printerName;
+            doc.PrintPage += OnPrintPage;
+            doc.Print();
+        }
+
+        private void OnPrintPage(object? sender, PrintPageEventArgs e)
+        {
+            if (_report == null || e.Graphics == null) return;
+
+            var g = e.Graphics;
+            float y = 5;
+            float width = e.PageBounds.Width > 0 ? e.PageBounds.Width : 280;
+            var centerFormat = new GdiStringFormat { Alignment = GdiStringAlignment.Center };
+            var rightFormat = new GdiStringFormat { Alignment = GdiStringAlignment.Far };
+
+            void DrawCenter(string text, GdiFont font)
+            {
+                g.DrawString(text, font, GdiBrushes.Black, new GdiRectangleF(0, y, width, 20), centerFormat);
+                y += font.GetHeight(g) + 4;
+            }
+
+            var noWrapFormat = new GdiStringFormat { FormatFlags = System.Drawing.StringFormatFlags.NoWrap };
+
+            void DrawLine(string left, string right, GdiFont font)
+            {
+                g.DrawString(left, font, GdiBrushes.Black, new GdiRectangleF(0, y, width * 0.65f, 26), noWrapFormat);
+                g.DrawString(right, font, GdiBrushes.Black, new GdiRectangleF(width * 0.6f, y, width * 0.4f, 26), rightFormat);
+                y += font.GetHeight(g) + 6;
+            }
+
+            DrawCenter("DROGUERÍA MICKEY", _boldFont);
+            DrawCenter("REPORTE DIARIO DE VENTAS", _normalFont);
+            DrawCenter(_report.Date, _normalFont);
+            y += 8;
+
+            DrawLine("N° de ventas:", $"{_report.SalesCount}", _normalFont);
+            DrawLine("Total vendido:", $"${_report.TotalSold:N0}", _boldFont);
+            y += 12;
+            DrawLine("Total efectivo:", $"${_report.TotalEfectivo:N0}", _normalFont);
+            DrawLine("Total Nequi:", $"${_report.TotalNequi:N0}", _normalFont);
+            DrawLine("Ticket promedio:", $"${_report.AverageTicket:N0}", _normalFont);
+        }
+    }
+    public class ReceiptPrintService
         {
             private ReceiptDto? _receipt;
             private readonly GdiFont _boldFont = new GdiFont("Consolas", 10, GdiFontStyle.Bold);
@@ -218,23 +274,24 @@ namespace DrogueriaMickey.Desktop.Services
                 DrawSeparator();
                 y += 2;
 
-                foreach (var item in _receipt.Items)
+            foreach (var item in _receipt.Items)
+            {
+                y += 6;
+
+                DrawLine($"{item.Quantity} {item.SaleUnit} - {item.MedicineName}", $"${item.Subtotal:N0}", _normalFont);
+                y += 12; // más espacio entre el nombre del producto y la línea de Base/IVA
+
+                if (item.HasIva)
                 {
-                    y += 6;
-                    DrawLine($"{item.Quantity} {item.SaleUnit} - {item.MedicineName}", $"${item.Subtotal:N0}", _normalFont);
-                    y += 4;
-
-                    if (item.HasIva)
-                    {
-                        g.DrawString($"  Base: ${item.BasePrice:N0}   IVA: ${item.TaxAmount:N0}",
-                            _smallFont, GdiBrushes.DimGray, new GdiRectangleF(0, y, width, 20));
-                        y += _smallFont.GetHeight(g) + 10;
-                    }
-
-                    y += 8;
+                    g.DrawString($"  Base: ${item.BasePrice:N0}   IVA: ${item.TaxAmount:N0}",
+                        _smallFont, GdiBrushes.DimGray, new GdiRectangleF(0, y, width, 20));
+                    y += _smallFont.GetHeight(g) + 10;
                 }
 
-                DrawSeparator();
+                y += 12; // más espacio antes de pasar al siguiente producto / separador
+            }
+
+            DrawSeparator();
 
                 if (_receipt.TotalTax > 0)
                     DrawLine("IVA incluido:", $"${_receipt.TotalTax:N0}", _smallFont);

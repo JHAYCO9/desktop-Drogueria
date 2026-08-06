@@ -2,152 +2,199 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid Background="{StaticResource BackgroundLightBrush}" Margin="-16">
-        <Grid Margin="24">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="360"/>
-            </Grid.ColumnDefinitions>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid Margin="24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="360"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- ===================== COLUMNA IZQUIERDA: apertura/cierre ===================== -->
-            <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                <!-- ===================== COLUMNA IZQUIERDA ===================== -->
+                <StackPanel Grid.Column="0" Margin="0,0,20,0">
 
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                    <TextBlock Text="Caja" FontSize="24" FontWeight="Bold" Foreground="{StaticResource PrimaryDarkBrush}" VerticalAlignment="Center"/>
-                    <Button Content="Ver movimientos" Command="{Binding ViewMovementsCommand}" Margin="16,0,0,0"
-                            Background="Transparent" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,6" Cursor="Hand" VerticalAlignment="Center"/>
-                </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <TextBlock Text="Caja" FontSize="24" FontWeight="Bold" Foreground="{StaticResource PrimaryDarkBrush}" VerticalAlignment="Center"/>
+                        <Button Content="Movimientos" Command="{Binding ViewMovementsCommand}" Margin="16,0,0,0"
+                            Background="Transparent" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,6" Cursor="Hand"/>
+                        <Button Content="Historial de cierres" Command="{Binding ViewHistoryCommand}" Margin="8,0,0,0"
+                            Background="Transparent" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,6" Cursor="Hand"/>
+                    </StackPanel>
 
-                <!-- RF-048: Apertura -->
-                <Border Background="White" Padding="20" CornerRadius="10" Margin="0,0,0,16"
+                    <!-- RF-048: Apertura -->
+                    <Border Background="White" Padding="20" CornerRadius="10" Margin="0,0,0,16"
                         Visibility="{Binding IsOpen, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                    <StackPanel>
-                        <TextBlock Text="Abrir caja" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,12"/>
-                        <TextBlock Text="Valor inicial en efectivo" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
-                        <TextBox Text="{Binding OpeningAmountInput, UpdateSourceTrigger=PropertyChanged}"
+                        <StackPanel>
+                            <TextBlock Text="Abrir caja" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,12"/>
+                            <TextBlock Text="Valor inicial en efectivo" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                            <TextBox Text="{Binding OpeningAmountInput, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="18" Padding="10,8" Margin="0,4,0,16" Width="240" HorizontalAlignment="Left"/>
-                        <Button Content="Abrir caja" Command="{Binding OpenCashRegisterCommand}"
+                            <Button Content="Abrir caja" Command="{Binding OpenCashRegisterCommand}"
                                 Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
                                 Padding="24,10" FontWeight="SemiBold" Cursor="Hand" HorizontalAlignment="Left"/>
-                    </StackPanel>
-                </Border>
+                        </StackPanel>
+                    </Border>
 
-                <!-- Estado actual, con caja abierta -->
-                <Border Background="White" Padding="20" CornerRadius="10" Margin="0,0,0,16"
+                    <!-- RF-019: Estado detallado -->
+                    <Border Background="White" Padding="20" CornerRadius="10" Margin="0,0,0,16"
                         Visibility="{Binding IsOpen, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="APERTURA" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
-                            <TextBlock Text="{Binding OpenedAt}" FontSize="12" Margin="0,4,0,0"/>
-                            <TextBlock Text="{Binding OpenedByName}" FontSize="12" FontWeight="SemiBold"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Text="EFECTIVO ESPERADO" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
-                            <TextBlock Text="{Binding ExpectedCash, StringFormat='${0:N0}'}" FontSize="18" FontWeight="Bold"
-                                    Foreground="{StaticResource PrimaryDarkBrush}" Margin="0,4,0,0"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="VENTAS POR NEQUI" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
-                            <TextBlock Text="{Binding TotalNequiSales, StringFormat='${0:N0}'}" FontSize="18" FontWeight="Bold"
-                                    Foreground="#7C3AED" Margin="0,4,0,0"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="3">
-                            <TextBlock Text="TOTAL VENDIDO" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
-                            <TextBlock Text="{Binding CurrentBalance, StringFormat='${0:N0}'}" FontSize="18" FontWeight="Bold" Margin="0,4,0,0"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                        <StackPanel>
+                            <TextBlock FontSize="13" Margin="0,0,0,12">
+                            <Run Text="Apertura: "/><Run Text="{Binding FechaApertura}"/>
+                            <Run Text="   Responsable: "/><Run Text="{Binding AbiertoPor}" FontWeight="SemiBold"/>
+                            </TextBlock>
 
-                <!-- RF-052/053/054: Cierre -->
-                <Border Background="White" Padding="20" CornerRadius="10"
-                        Visibility="{Binding IsOpen, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel>
-                        <TextBlock Text="Cerrar caja (arqueo)" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,14"/>
-
-                        <StackPanel Visibility="{Binding ShowCloseConfirmation, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                            <StackPanel Orientation="Horizontal">
-                                <StackPanel Margin="0,0,20,0">
-                                    <TextBlock Text="Dinero contado físicamente" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
-                                    <TextBox Text="{Binding CountedAmountInput, UpdateSourceTrigger=PropertyChanged}"
-                                             FontSize="16" Padding="10,8" Margin="0,4,0,0" Width="220"/>
-                                </StackPanel>
-                                <Button Content="Calcular diferencia" Command="{Binding PreviewCloseCommand}"
-                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
-                                        Padding="18,10" Cursor="Hand" VerticalAlignment="Bottom"/>
-                            </StackPanel>
-                        </StackPanel>
-
-                        <StackPanel Visibility="{Binding ShowCloseConfirmation, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <Grid Background="{StaticResource BackgroundLightBrush}" Margin="0,0,0,14">
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" Margin="16">
-                                <TextBlock Text="ESPERADO (solo efectivo)" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>                                    
-                                <TextBlock Text="{Binding ExpectedAmountPreview, StringFormat='${0:N0}'}" FontSize="16" FontWeight="Bold"/>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,12">
+                                    <TextBlock Text="VENTAS EFECTIVO" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
+                                    <TextBlock Text="{Binding TotalVentasEfectivo, StringFormat='${0:N0}'}" FontSize="16" FontWeight="Bold"/>
                                 </StackPanel>
-                                <StackPanel Grid.Column="1" Margin="16">
-                                    <TextBlock Text="CONTADO" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
-                                    <TextBlock Text="{Binding CountedAmountInput, StringFormat='${0}'}" FontSize="16" FontWeight="Bold"/>
+                                <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,12">
+                                    <TextBlock Text="OTROS MEDIOS (NEQUI)" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
+                                    <TextBlock Text="{Binding TotalVentasOtrosMedios, StringFormat='${0:N0}'}" FontSize="16" FontWeight="Bold" Foreground="#7C3AED"/>
                                 </StackPanel>
-                                <StackPanel Grid.Column="2" Margin="16">
-                                    <TextBlock Text="DIFERENCIA" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
-                                    <TextBlock Text="{Binding DifferencePreview, StringFormat='${0:N0}'}" FontSize="16" FontWeight="Bold"
-                                               Foreground="{StaticResource ErrorBrush}"/>
+                                <StackPanel Grid.Row="1" Grid.Column="0">
+                                    <TextBlock Text="INGRESOS MANUALES" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
+                                    <TextBlock Text="{Binding TotalIngresosManual, StringFormat='${0:N0}'}" FontSize="16" FontWeight="Bold" Foreground="Green"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="1">
+                                    <TextBlock Text="EGRESOS MANUALES" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
+                                    <TextBlock Text="{Binding TotalEgresosManual, StringFormat='${0:N0}'}" FontSize="16" FontWeight="Bold" Foreground="{StaticResource ErrorBrush}"/>
                                 </StackPanel>
                             </Grid>
 
-                            <StackPanel Visibility="{Binding HasDifference, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,0,0,14">
-                                <TextBlock Text="Motivo de la diferencia (obligatorio)" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
-                                <TextBox Text="{Binding DifferenceReasonInput, UpdateSourceTrigger=PropertyChanged}" Padding="10,8" Margin="0,4,0,0"/>
+                            <Border Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="6" Margin="0,16,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="SALDO TEÓRICO EN EFECTIVO" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
+                                    <TextBlock Text="{Binding SaldoTeorico, StringFormat='${0:N0}'}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PrimaryDarkBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- RF-018: movimiento manual -->
+                    <Border Background="White" Padding="20" CornerRadius="10" Margin="0,0,0,16"
+                        Visibility="{Binding IsOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="Registrar ingreso / egreso manual" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,12"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <RadioButton Content="Ingreso" GroupName="movType" IsChecked="True"
+                                         Command="{Binding }" Margin="0,0,20,0"
+                                         Checked="IngresoRadio_Checked"/>
+                                <RadioButton Content="Egreso" GroupName="movType"
+                                         Checked="EgresoRadio_Checked"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel Width="150" Margin="0,0,12,0">
+                                    <TextBlock Text="Monto" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                    <TextBox Text="{Binding ManualAmountInput, UpdateSourceTrigger=PropertyChanged}" Padding="8" Margin="0,4,0,0"/>
+                                </StackPanel>
+                                <StackPanel Width="250">
+                                    <TextBlock Text="Justificación" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                    <TextBox Text="{Binding ManualReasonInput, UpdateSourceTrigger=PropertyChanged}" Padding="8" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <Button Content="Registrar movimiento" Command="{Binding RegisterManualMovementCommand}" Margin="0,14,0,0"
+                                Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                                Padding="18,8" Cursor="Hand" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- RF-052/053/054: cierre -->
+                    <Border Background="White" Padding="20" CornerRadius="10"
+                        Visibility="{Binding IsOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="Cerrar caja (arqueo)" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,14"/>
+
+                            <StackPanel Visibility="{Binding ShowCloseConfirmation, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <StackPanel Margin="0,0,20,0">
+                                        <TextBlock Text="Dinero contado físicamente" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                        <TextBox Text="{Binding CountedAmountInput, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="16" Padding="10,8" Margin="0,4,0,0" Width="220"/>
+                                    </StackPanel>
+                                    <Button Content="Calcular diferencia" Command="{Binding PreviewCloseCommand}"
+                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                                        Padding="18,10" Cursor="Hand" VerticalAlignment="Bottom"/>
+                                </StackPanel>
                             </StackPanel>
 
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="Confirmar cierre" Command="{Binding ConfirmCloseCommand}"
+                            <StackPanel Visibility="{Binding ShowCloseConfirmation, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid Background="{StaticResource BackgroundLightBrush}" Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="16">
+                                        <TextBlock Text="ESPERADO" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
+                                        <TextBlock Text="{Binding ExpectedAmountPreview, StringFormat='${0:N0}'}" FontSize="16" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="16">
+                                        <TextBlock Text="CONTADO" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
+                                        <TextBlock Text="{Binding CountedAmountInput, StringFormat='${0}'}" FontSize="16" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="16">
+                                        <TextBlock Text="DIFERENCIA" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
+                                        <TextBlock Text="{Binding DifferencePreview, StringFormat='${0:N0}'}" FontSize="16" FontWeight="Bold"
+                                               Foreground="{StaticResource ErrorBrush}"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <StackPanel Visibility="{Binding HasDifference, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,0,0,14">
+                                    <TextBlock Text="Motivo de la diferencia" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                    <TextBox Text="{Binding DifferenceReasonInput, UpdateSourceTrigger=PropertyChanged}" Padding="10,8" Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Confirmar cierre" Command="{Binding ConfirmCloseCommand}"
                                         Background="{StaticResource ErrorBrush}" Foreground="White" BorderThickness="0"
                                         Padding="20,10" FontWeight="SemiBold" Cursor="Hand"/>
-                                <Button Content="Cancelar" Command="{Binding CancelCloseCommand}" Margin="10,0,0,0"
+                                    <Button Content="Cancelar" Command="{Binding CancelCloseCommand}" Margin="10,0,0,0"
                                         Background="Transparent" BorderBrush="#D1D5DB" BorderThickness="1" Padding="20,10" Cursor="Hand"/>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" Margin="0,12,0,0"/>
+                    <TextBlock Text="{Binding SuccessMessage}" Foreground="Green" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                </StackPanel>
+
+                <!-- ===================== COLUMNA DERECHA ===================== -->
+                <Border Grid.Column="1" Background="{StaticResource PrimaryDarkBrush}" CornerRadius="14" Padding="28"
+                    Visibility="{Binding IsOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="🛒" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                        <TextBlock Text="Caja lista" FontSize="22" FontWeight="Bold" Foreground="White"
+                               HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                        <TextBlock Text="Empieza a atender clientes ahora mismo" FontSize="13" Foreground="{StaticResource PrimaryLightBrush}"
+                               HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,28"/>
+                        <Button Content="Ir a Ventas" Command="{Binding GoToSalesCommand}"
+                            Background="White" Foreground="{StaticResource PrimaryDarkBrush}" BorderThickness="0"
+                            Padding="0,16" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
                     </StackPanel>
                 </Border>
 
-                <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" Margin="0,12,0,0"/>
-                <TextBlock Text="{Binding SuccessMessage}" Foreground="Green" TextWrapping="Wrap" Margin="0,8,0,0"/>
-            </StackPanel>
-
-            <!-- ===================== COLUMNA DERECHA: acceso a Ventas ===================== -->
-            <Border Grid.Column="1" Background="{StaticResource PrimaryDarkBrush}" CornerRadius="14" Padding="28"
-                    Visibility="{Binding IsOpen, Converter={StaticResource BoolToVisibilityConverter}}">
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Caja lista" FontSize="22" FontWeight="Bold" Foreground="White"
-                               HorizontalAlignment="Center" Margin="0,0,0,6"/>
-                    <TextBlock Text="Empieza a atender clientes ahora mismo" FontSize="13" Foreground="{StaticResource PrimaryLightBrush}"
-                               HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,28"/>
-                    <Button Content="Ir a Ventas" Command="{Binding GoToSalesCommand}"
-                            Background="White" Foreground="{StaticResource PrimaryDarkBrush}" BorderThickness="0"
-                            Padding="0,16" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Columna derecha cuando la caja está cerrada: mensaje informativo -->
-            <Border Grid.Column="1" Background="White" CornerRadius="14" Padding="28"
+                <Border Grid.Column="1" Background="White" CornerRadius="14" Padding="28"
                     Visibility="{Binding IsOpen, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Caja cerrada" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="🔒" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                        <TextBlock Text="Caja cerrada" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
                                HorizontalAlignment="Center" Margin="0,0,0,6"/>
-                    <TextBlock Text="Abre la caja para empezar a vender" FontSize="13" Foreground="{StaticResource TextMutedBrush}"
+                        <TextBlock Text="Abre la caja para empezar a vender" FontSize="13" Foreground="{StaticResource TextMutedBrush}"
                                HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
-                </StackPanel>
-            </Border>
-        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </UserControl>

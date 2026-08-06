@@ -222,6 +222,49 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
             ApplySaleUpdate(result.Data);
         }
 
+        [RelayCommand]
+        private async Task IncreaseItemQuantity(SaleItemDto item)
+        {
+            if (SaleId == null) return;
+
+            IsBusy = true;
+            var result = await _saleService.UpdateItemQuantityAsync(SaleId, item.Id, item.Quantity + 1);
+            IsBusy = false;
+
+            if (!result.Success || result.Data == null)
+            {
+                ErrorMessage = result.ErrorMessage ?? "No se pudo aumentar la cantidad";
+                return;
+            }
+
+            ApplySaleUpdate(result.Data);
+        }
+
+        [RelayCommand]
+        private async Task DecreaseItemQuantity(SaleItemDto item)
+        {
+            if (SaleId == null) return;
+
+            if (item.Quantity <= 1)
+            {
+                // Si ya está en 1, disminuir significa quitar el producto del carrito.
+                await RemoveItem(item);
+                return;
+            }
+
+            IsBusy = true;
+            var result = await _saleService.UpdateItemQuantityAsync(SaleId, item.Id, item.Quantity - 1);
+            IsBusy = false;
+
+            if (!result.Success || result.Data == null)
+            {
+                ErrorMessage = result.ErrorMessage ?? "No se pudo disminuir la cantidad";
+                return;
+            }
+
+            ApplySaleUpdate(result.Data);
+        }
+
         // RF-036
         [RelayCommand]
         private async Task CancelSale()

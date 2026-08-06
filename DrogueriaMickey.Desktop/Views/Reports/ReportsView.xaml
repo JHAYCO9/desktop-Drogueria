@@ -1,11 +1,171 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Reports.ReportsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             mc:Ignorable="d"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="{StaticResource BackgroundLightBrush}" Margin="-16">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="24">
+                <TextBlock Text="Reportes" FontSize="24" FontWeight="Bold" Foreground="{StaticResource PrimaryDarkBrush}" Margin="0,0,0,20"/>
 
+                <TabControl>
+                    <!-- RF-061 -->
+                    <TabItem Header="Ventas diarias">
+                        <StackPanel Margin="16">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <TextBox Text="{Binding DailyDate, UpdateSourceTrigger=PropertyChanged}" Width="140" Padding="8" Margin="0,0,8,0"/>
+                                <Button Content="Generar" Command="{Binding GenerateDailyReportCommand}"
+                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand" Margin="0,0,8,0"/>
+                                <Button Content="🖨 Imprimir" Command="{Binding PrintDailyReportCommand}"
+                                        Background="Transparent" BorderThickness="1" Padding="14,8" Cursor="Hand"/>
+                            </StackPanel>
+                            <Border Background="White" Padding="16" CornerRadius="8" MaxWidth="400"
+                                    Visibility="{Binding DailyReport, Converter={StaticResource NullToVisibilityConverter}}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding DailyReport.Date, StringFormat='Fecha: {0}'}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding DailyReport.SalesCount, StringFormat='N° de ventas: {0}'}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding DailyReport.TotalSold, StringFormat='Total vendido: ${0:N0}'}" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding DailyReport.TotalEfectivo, StringFormat='Total efectivo: ${0:N0}'}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding DailyReport.TotalNequi, StringFormat='Total Nequi: ${0:N0}'}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding DailyReport.AverageTicket, StringFormat='Ticket promedio: ${0:N0}'}" Margin="0,0,0,14"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="📄 Exportar PDF" Command="{Binding ExportDailyPdfCommand}"
+                                                Background="{StaticResource ErrorBrush}" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand" Margin="0,0,8,0"/>
+                                        <Button Content="📊 Exportar Excel" Command="{Binding ExportDailyExcelCommand}"
+                                                Background="Green" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- RF-062 -->
+                    <TabItem Header="Ventas mensuales">
+                        <StackPanel Margin="16">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <TextBox Text="{Binding MonthlyYear, UpdateSourceTrigger=PropertyChanged}" Width="80" Padding="8" Margin="0,0,8,0"/>
+                                <TextBox Text="{Binding MonthlyMonth, UpdateSourceTrigger=PropertyChanged}" Width="60" Padding="8" Margin="0,0,8,0"/>
+                                <Button Content="Generar" Command="{Binding GenerateMonthlyReportCommand}"
+                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand"/>
+                            </StackPanel>
+                            <Border Background="White" Padding="16" CornerRadius="8" MaxWidth="400"
+                                    Visibility="{Binding MonthlyReport, Converter={StaticResource NullToVisibilityConverter}}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding MonthlyReport.Month, StringFormat='Mes: {0}'}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding MonthlyReport.SalesCount, StringFormat='N° de ventas: {0}'}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding MonthlyReport.TotalSold, StringFormat='Total vendido: ${0:N0}'}" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding MonthlyReport.AverageDaily, StringFormat='Promedio diario: ${0:N0}'}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding MonthlyReport.BestDay, StringFormat='Mejor día: {0}'}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding MonthlyReport.BestDayTotal, StringFormat='Total ese día: ${0:N0}'}" Margin="0,0,0,14"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="📄 Exportar PDF" Command="{Binding ExportMonthlyPdfCommand}"
+                                                Background="{StaticResource ErrorBrush}" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand" Margin="0,0,8,0"/>
+                                        <Button Content="📊 Exportar Excel" Command="{Binding ExportMonthlyExcelCommand}"
+                                                Background="Green" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- RF-065 -->
+                    <TabItem Header="Inventario">
+                        <StackPanel Margin="16">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <Button Content="Generar reporte" Command="{Binding GenerateInventoryReportCommand}"
+                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand" Margin="0,0,16,0"/>
+                                <Button Content="📄 PDF" Command="{Binding ExportInventoryPdfCommand}"
+                                        Background="{StaticResource ErrorBrush}" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand" Margin="0,0,8,0"/>
+                                <Button Content="📊 Excel" Command="{Binding ExportInventoryExcelCommand}"
+                                        Background="Green" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand"/>
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding InventoryReport}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="400">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Medicamento" Binding="{Binding Name}" Width="200"/>
+                                    <DataGridTextColumn Header="Stock actual" Binding="{Binding TotalStock}" Width="100"/>
+                                    <DataGridTextColumn Header="Stock mínimo" Binding="{Binding MinStock}" Width="100"/>
+                                    <DataGridTextColumn Header="Lotes" Binding="{Binding AvailableBatches}" Width="70"/>
+                                    <DataGridTextColumn Header="Próx. vencim." Binding="{Binding NextExpiration}" Width="110"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- RF-066 -->
+                    <TabItem Header="Próximos a vencer">
+                        <StackPanel Margin="16">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <TextBlock Text="Días:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBox Text="{Binding ExpiringDays, UpdateSourceTrigger=PropertyChanged}" Width="60" Padding="8" Margin="0,0,8,0"/>
+                                <Button Content="Generar" Command="{Binding GenerateExpiringReportCommand}"
+                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand" Margin="0,0,16,0"/>
+                                <Button Content="📄 PDF" Command="{Binding ExportExpiringPdfCommand}"
+                                        Background="{StaticResource ErrorBrush}" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand" Margin="0,0,8,0"/>
+                                <Button Content="📊 Excel" Command="{Binding ExportExpiringExcelCommand}"
+                                        Background="Green" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand"/>
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding ExpiringReport}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="400">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="200"/>
+                                    <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="140"/>
+                                    <DataGridTextColumn Header="Vencimiento" Binding="{Binding ExpirationDate}" Width="120"/>
+                                    <DataGridTextColumn Header="Días restantes" Binding="{Binding DaysRemaining}" Width="110"/>
+                                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="90"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- RF-067 -->
+                    <TabItem Header="Vencidos">
+                        <StackPanel Margin="16">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <Button Content="Generar reporte" Command="{Binding GenerateExpiredReportCommand}"
+                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand" Margin="0,0,16,0"/>
+                                <Button Content="📄 PDF" Command="{Binding ExportExpiredPdfCommand}"
+                                        Background="{StaticResource ErrorBrush}" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand" Margin="0,0,8,0"/>
+                                <Button Content="📊 Excel" Command="{Binding ExportExpiredExcelCommand}"
+                                        Background="Green" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand"/>
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding ExpiredReport}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="400">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="200"/>
+                                    <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="140"/>
+                                    <DataGridTextColumn Header="Vencimiento" Binding="{Binding ExpirationDate}" Width="120"/>
+                                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="90"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- RF-068 -->
+                    <TabItem Header="Movimientos">
+                        <StackPanel Margin="16">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <TextBox Text="{Binding MovementsFrom, UpdateSourceTrigger=PropertyChanged}" Width="130" Padding="8" Margin="0,0,8,0"/>
+                                <TextBox Text="{Binding MovementsTo, UpdateSourceTrigger=PropertyChanged}" Width="130" Padding="8" Margin="0,0,8,0"/>
+                                <Button Content="Generar" Command="{Binding GenerateMovementsReportCommand}"
+                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand" Margin="0,0,16,0"/>
+                                <Button Content="📄 PDF" Command="{Binding ExportMovementsPdfCommand}"
+                                        Background="{StaticResource ErrorBrush}" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand" Margin="0,0,8,0"/>
+                                <Button Content="📊 Excel" Command="{Binding ExportMovementsExcelCommand}"
+                                        Background="Green" Foreground="White" BorderThickness="0" Padding="12,6" Cursor="Hand"/>
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding MovementsReport}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="400">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="180"/>
+                                    <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="130"/>
+                                    <DataGridTextColumn Header="Tipo" Binding="{Binding MovementType}" Width="100"/>
+                                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="90"/>
+                                    <DataGridTextColumn Header="Usuario" Binding="{Binding Username}" Width="130"/>
+                                    <DataGridTextColumn Header="Fecha" Binding="{Binding CreatedAt}" Width="150"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
+
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" Margin="0,16,0,0"/>
+                <TextBlock Text="{Binding SuccessMessage}" Foreground="Green" TextWrapping="Wrap" Margin="0,8,0,0"/>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

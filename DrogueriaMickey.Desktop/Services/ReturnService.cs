@@ -15,11 +15,24 @@ namespace DrogueriaMickey.Desktop.Services
         public int Quantity { get; set; }
         public string Reason { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
+        public bool IsVoided { get; set; }
+        public string VoidedReason { get; set; } = string.Empty;
+        public string VoidedAt { get; set; } = string.Empty;
+        public string VoidedByName { get; set; } = string.Empty;
         public string CreatedAt { get; set; } = string.Empty;
     }
 
     public class ReturnService
     {
+        // RF-092: motivos predefinidos, deben coincidir exacto con el backend.
+        public static readonly List<string> ValidReasons = new()
+        {
+            "Error en la venta",
+            "Error en el producto entregado",
+            "Producto defectuoso",
+            "Otro"
+        };
+
         private readonly HttpClient _httpClient;
         private readonly SessionService _session;
 
@@ -38,7 +51,7 @@ namespace DrogueriaMickey.Desktop.Services
                 new AuthenticationHeaderValue("Bearer", _session.Token);
         }
 
-        // RF-089 + RF-091 + RF-095
+        // RF-089 + RF-090 + RF-092 (solo Administrador, requiere caja abierta)
         public async Task<ApiResult<object>> RegisterReturnAsync(string saleId, string saleItemId, int quantity, string reason)
         {
             try
@@ -62,7 +75,29 @@ namespace DrogueriaMickey.Desktop.Services
             }
         }
 
-        // RF-093
+        // RF-094: anular devolución (solo Administrador).
+        public async Task<ApiResult<object>> VoidReturnAsync(string returnId, string reason)
+        {
+            try
+            {
+                AttachToken();
+                var response = await _httpClient.PostAsJsonAsync($"returns/{returnId}/void", new
+                {
+                    reason
+                }, JsonOptions.Default);
+
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<object> { Success = false, ErrorMessage = await ReadError(response) };
+
+                return new ApiResult<object> { Success = true };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<object> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
+        }
+
+        // RF-093 + RNF-027
         public async Task<ApiResult<List<ReturnDto>>> ListReturnsAsync()
         {
             try

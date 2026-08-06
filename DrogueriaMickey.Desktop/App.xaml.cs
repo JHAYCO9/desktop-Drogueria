@@ -88,6 +88,15 @@ namespace DrogueriaMickey.Desktop
             services.AddHttpClient<ReturnService>();
             services.AddTransient<ViewModels.Returns.ReturnCreateViewModel>();
             services.AddTransient<ViewModels.Returns.ReturnsHistoryViewModel>();
+            services.AddTransient<ViewModels.CashRegister.CashHistoryViewModel>();
+            services.AddHttpClient<ReportService>();
+            services.AddSingleton<DailyReportPrintService>();
+            services.AddTransient<ViewModels.Reports.ReportsViewModel>();
+            services.AddSingleton<ReportExportService>();
+            services.AddHttpClient<BotService>();
+            services.AddSingleton<ViewModels.Bot.BotChatViewModel>();
+            services.AddHttpClient<SystemSettingsService>();
+            services.AddTransient<ViewModels.Settings.SettingsViewModel>();
 
             ServiceProvider = services.BuildServiceProvider();
 

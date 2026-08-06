@@ -59,6 +59,8 @@
             <conv:ActiveToLabelConverter x:Key="ActiveToLabelConverter"/>
             <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <conv:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

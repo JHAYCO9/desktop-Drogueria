@@ -95,20 +95,28 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="2*"/>
                         <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="*"/>
-                        <DataGridTextColumn Header="Cant." Binding="{Binding Quantity}" Width="70"/>
+                        <DataGridTemplateColumn Header="Cantidad" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="−" Width="26" Height="26" FontSize="14" FontWeight="Bold"
+                        Background="{StaticResource ErrorBrush}" Foreground="White" BorderThickness="0" Cursor="Hand"
+                        Command="{Binding DataContext.DecreaseItemQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                        CommandParameter="{Binding}"/>
+                                        <TextBlock Text="{Binding Quantity}" FontWeight="Bold" Width="30"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Button Content="+" Width="26" Height="26" FontSize="14" FontWeight="Bold"
+                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Cursor="Hand"
+                        Command="{Binding DataContext.IncreaseItemQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                        CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="Unidad" Binding="{Binding SaleUnit}" Width="80"/>
                         <DataGridTextColumn Header="Precio unit." Binding="{Binding UnitPrice, StringFormat='${0:N0}'}" Width="95"/>
                         <DataGridTextColumn Header="IVA" Binding="{Binding TaxAmount, StringFormat='${0:N0}'}" Width="75"/>
                         <DataGridTextColumn Header="Subtotal" Binding="{Binding Subtotal, StringFormat='${0:N0}'}" Width="100"/>
-                        <DataGridTemplateColumn Header="" Width="90">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="Cambiar"
-                                            Command="{Binding DataContext.ChangeQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
                         <DataGridTemplateColumn Header="" Width="70">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>

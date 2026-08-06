@@ -29,7 +29,7 @@
         <TextBox Text="{Binding QuantityInput, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,14" Padding="8" Width="120" HorizontalAlignment="Left"/>
 
         <TextBlock Text="Motivo de la devolución"/>
-        <TextBox Text="{Binding ReasonInput, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,16" Padding="8"/>
+        <ComboBox ItemsSource="{Binding AvailableReasons}" SelectedItem="{Binding SelectedReason}" Margin="0,4,0,16" Padding="8"/>
 
         <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
         <TextBlock Text="{Binding SuccessMessage}" Foreground="Green" TextWrapping="Wrap" Margin="0,0,0,10"/>
