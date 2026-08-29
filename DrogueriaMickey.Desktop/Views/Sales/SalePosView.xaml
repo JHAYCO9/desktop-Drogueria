@@ -1,7 +1,6 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Sales.SalePosView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
     <Grid Background="{StaticResource BackgroundLightBrush}" Margin="-16">
         <Grid Margin="24">
             <Grid.ColumnDefinitions>
@@ -19,48 +18,84 @@
 
                 <!-- Encabezado -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                    <TextBlock Text="Punto de venta" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding SaleNumber, StringFormat=' — Venta #{0}'}" FontSize="14"
+                    <TextBlock Text="Punto de venta" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SaleNumber, StringFormat=' — Venta N.° {0}'}" FontSize="14"
                                Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <Button Content="Cancelar venta" Command="{Binding CancelSaleCommand}" Margin="16,0,0,0"
-                            Background="{StaticResource ErrorBrush}" Foreground="White" Padding="12,6" BorderThickness="0" Cursor="Hand"
+                            Background="Transparent" Foreground="{StaticResource ErrorBrush}" BorderBrush="{StaticResource ErrorBrush}"
+                            BorderThickness="1" Padding="12,6" Cursor="Hand"
                             Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}"/>
                 </StackPanel>
 
-                <!-- Escaneo + producto en preparación -->
+                <!-- Escaneo + búsqueda -->
                 <StackPanel Grid.Row="1" Margin="0,0,0,16"
                             Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}">
 
-                    <Border Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8">
+                    <Border Background="White" Padding="14" CornerRadius="6" BorderThickness="1" BorderBrush="#DADFE3">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Código de barras:" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <Path Data="M2,10 L18,10" Stroke="{StaticResource TextMutedBrush}" StrokeThickness="1.4"
+                                  Width="14" Height="14" Stretch="Uniform" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Código de barras" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource TextMutedBrush}" FontSize="12.5"/>
                             <TextBox x:Name="BarcodeBox"
                                      Text="{Binding BarcodeInput, UpdateSourceTrigger=PropertyChanged}"
-                                     Width="250" Padding="8"
+                                     Width="220" Padding="8" BorderThickness="1" BorderBrush="#DADFE3"
                                      KeyDown="BarcodeBox_KeyDown"/>
-                            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}"
-                                       VerticalAlignment="Center" Margin="16,0,0,0" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" VerticalAlignment="Center" Margin="16,0,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Panel del producto escaneado -->
-                    <Border Background="White" Padding="14" CornerRadius="8" Margin="0,12,0,0" BorderThickness="1" BorderBrush="#D1D5DB"
+                    <!-- Búsqueda por nombre -->
+                    <Border Background="White" Padding="14" CornerRadius="6" BorderThickness="1" BorderBrush="#DADFE3" Margin="0,10,0,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M8,2 A6,6 0 1 1 8,14 A6,6 0 1 1 8,2 M12.5,12.5 L18,18" Stroke="{StaticResource TextMutedBrush}"
+                                      StrokeThickness="1.4" Width="14" Height="14" Stretch="Uniform" Margin="0,0,10,0"/>
+                                <TextBlock Text="Buscar por nombre" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource TextMutedBrush}" FontSize="12.5"/>
+                                <TextBox Text="{Binding NameSearchInput, UpdateSourceTrigger=PropertyChanged}"
+                                         Width="300" Padding="8" BorderThickness="1" BorderBrush="#DADFE3"/>
+                            </StackPanel>
+
+                            <Border Background="White" BorderThickness="1" BorderBrush="#DADFE3" CornerRadius="4" Margin="0,8,0,0"
+                                    MaxHeight="220" Visibility="{Binding ShowSearchResults, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding SearchResults}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Cursor="Hand" Background="Transparent" BorderThickness="0"
+                                                        HorizontalContentAlignment="Stretch" Padding="10,8"
+                                                        Command="{Binding DataContext.SelectSearchResultCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                        <TextBlock Text="{Binding Laboratory}" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Panel del producto seleccionado -->
+                    <Border Background="White" Padding="16" CornerRadius="6" Margin="0,12,0,0" BorderThickness="1" BorderBrush="#DADFE3"
                             Visibility="{Binding ShowPendingPanel, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel>
-                            <TextBlock Text="{Binding ScannedMedicine.Name}" FontWeight="Bold" FontSize="15" Margin="0,0,0,10"/>
+                            <TextBlock Text="{Binding ScannedMedicine.Name}" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,12"/>
 
-                            <TextBlock Text="Unidad de venta:" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,6"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <TextBlock Text="UNIDAD DE VENTA" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,6"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                 <RadioButton Content="Pastilla" GroupName="unit"
                                              IsChecked="{Binding IsPillSelected, Mode=OneWay}"
                                              Command="{Binding SelectUnitCommand}" CommandParameter="pastilla"
                                              Visibility="{Binding ScannedMedicine.SellsByPill, Converter={StaticResource BoolToVisibilityConverter}}"
-                                             Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                             Margin="0,0,20,0" VerticalAlignment="Center"/>
                                 <RadioButton Content="Sello" GroupName="unit"
                                              IsChecked="{Binding IsSealSelected, Mode=OneWay}"
                                              Command="{Binding SelectUnitCommand}" CommandParameter="sello"
                                              Visibility="{Binding ScannedMedicine.SellsBySeal, Converter={StaticResource BoolToVisibilityConverter}}"
-                                             Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                             Margin="0,0,20,0" VerticalAlignment="Center"/>
                                 <RadioButton Content="Caja / Tarro" GroupName="unit"
                                              IsChecked="{Binding IsBoxSelected, Mode=OneWay}"
                                              Command="{Binding SelectUnitCommand}" CommandParameter="caja"
@@ -68,22 +103,31 @@
                                              VerticalAlignment="Center"/>
                             </StackPanel>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                <TextBlock Text="Cantidad:" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                <Button Content="−" Command="{Binding DecreaseQuantityCommand}" Width="32" Height="32"
-                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-                                <TextBlock Text="{Binding PendingQuantity}" FontSize="16" FontWeight="Bold" Width="46"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <Button Content="+" Command="{Binding IncreaseQuantityCommand}" Width="32" Height="32"
-                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                <TextBlock Text="CANTIDAD" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"
+                                           VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                <Button Content="−" Command="{Binding DecreaseQuantityCommand}" Width="30" Height="30"
+                                        Background="{StaticResource BackgroundLightBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                        BorderThickness="1" BorderBrush="#DADFE3" FontSize="15" Cursor="Hand"/>
+                                <TextBlock Text="{Binding PendingQuantity}" FontSize="15" FontWeight="SemiBold" Width="44"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <Button Content="+" Command="{Binding IncreaseQuantityCommand}" Width="30" Height="30"
+                                        Background="{StaticResource BackgroundLightBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                        BorderThickness="1" BorderBrush="#DADFE3" FontSize="15" Cursor="Hand"/>
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="Agregar a la venta" Command="{Binding ConfirmAddItemCommand}"
-                                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
-                                        Padding="16,8" Cursor="Hand"/>
+                                        Foreground="White" BorderThickness="0" Padding="16,8" Cursor="Hand">
+                                    <Button.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#1B3270" Offset="0"/>
+                                            <GradientStop Color="#264A8E" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Button.Background>
+                                </Button>
                                 <Button Content="Cancelar" Command="{Binding CancelPendingCommand}" Margin="8,0,0,0"
-                                        Background="Transparent" BorderThickness="1" Padding="16,8" Cursor="Hand"/>
+                                        Background="Transparent" BorderThickness="1" BorderBrush="#DADFE3" Padding="16,8" Cursor="Hand"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -93,36 +137,41 @@
                 <DataGrid Grid.Row="2" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
                           Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Medicamento" Binding="{Binding MedicineName}" Width="2*"/>
-                        <DataGridTextColumn Header="Lote" Binding="{Binding BatchCode}" Width="*"/>
-                        <DataGridTemplateColumn Header="Cantidad" Width="130">
+                        <DataGridTextColumn Header="MEDICAMENTO" Binding="{Binding MedicineName}" Width="2*"/>
+                        <DataGridTextColumn Header="LOTE" Binding="{Binding BatchCode}" Width="*"/>
+                        <DataGridTemplateColumn Header="CANTIDAD" Width="130">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <Button Content="−" Width="26" Height="26" FontSize="14" FontWeight="Bold"
-                        Background="{StaticResource ErrorBrush}" Foreground="White" BorderThickness="0" Cursor="Hand"
-                        Command="{Binding DataContext.DecreaseItemQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                        CommandParameter="{Binding}"/>
-                                        <TextBlock Text="{Binding Quantity}" FontWeight="Bold" Width="30"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        <Button Content="+" Width="26" Height="26" FontSize="14" FontWeight="Bold"
-                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Cursor="Hand"
-                        Command="{Binding DataContext.IncreaseItemQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                        CommandParameter="{Binding}"/>
+                                        <Button Content="−" Width="24" Height="24" FontSize="13"
+                                                Background="{StaticResource BackgroundLightBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                                BorderThickness="1" BorderBrush="#DADFE3" Cursor="Hand"
+                                                Command="{Binding DataContext.DecreaseItemQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"/>
+                                        <TextBlock Text="{Binding Quantity}" FontWeight="SemiBold" Width="28"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Button Content="+" Width="24" Height="24" FontSize="13"
+                                                Background="{StaticResource BackgroundLightBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                                BorderThickness="1" BorderBrush="#DADFE3" Cursor="Hand"
+                                                Command="{Binding DataContext.IncreaseItemQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Unidad" Binding="{Binding SaleUnit}" Width="80"/>
-                        <DataGridTextColumn Header="Precio unit." Binding="{Binding UnitPrice, StringFormat='${0:N0}'}" Width="95"/>
+                        <DataGridTextColumn Header="UNIDAD" Binding="{Binding SaleUnit}" Width="80"/>
+                        <DataGridTextColumn Header="PRECIO" Binding="{Binding UnitPrice, StringFormat='${0:N0}'}" Width="95"/>
                         <DataGridTextColumn Header="IVA" Binding="{Binding TaxAmount, StringFormat='${0:N0}'}" Width="75"/>
-                        <DataGridTextColumn Header="Subtotal" Binding="{Binding Subtotal, StringFormat='${0:N0}'}" Width="100"/>
-                        <DataGridTemplateColumn Header="" Width="70">
+                        <DataGridTextColumn Header="SUBTOTAL" Binding="{Binding Subtotal, StringFormat='${0:N0}'}" Width="100"/>
+                        <DataGridTemplateColumn Header="" Width="60">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="Quitar"
+                                    <Button Width="26" Height="26" Background="Transparent" BorderThickness="0" Cursor="Hand"
                                             Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"/>
+                                            CommandParameter="{Binding}">
+                                        <Path Data="M3,3 L13,13 M13,3 L3,13" Stroke="{StaticResource ErrorBrush}" StrokeThickness="1.6"
+                                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" Width="12" Height="12" Stretch="Uniform"/>
+                                    </Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -134,15 +183,21 @@
             </Grid>
 
             <!-- ===================== COLUMNA DERECHA: resumen ===================== -->
-            <Border Grid.Column="1" Background="{StaticResource PrimaryDarkBrush}" Padding="20"
+            <Border Grid.Column="1" Padding="20"
                     Visibility="{Binding HasActiveSale, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#1B3270" Offset="0"/>
+                        <GradientStop Color="#264A8E" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
                 <StackPanel>
-                    <TextBlock Text="Resumen de venta" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,16"/>
+                    <TextBlock Text="RESUMEN DE VENTA" FontSize="11" FontWeight="SemiBold" Foreground="#AEC2E8" Margin="0,0,0,18"/>
 
                     <ItemsControl ItemsSource="{Binding Items}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid Margin="0,0,0,10">
+                                <Grid Margin="0,0,0,12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -154,16 +209,16 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <Border Height="1" Background="#4C6EA8" Margin="0,12,0,16"/>
+                    <Border Height="1" Background="#3A5798" Margin="0,10,0,16"/>
 
-                    <TextBlock Text="{Binding TotalTaxAmount, StringFormat='IVA incluido: ${0:N0}'}" FontSize="12" Foreground="{StaticResource PrimaryLightBrush}" Margin="0,0,0,4"/>
-                    <TextBlock Text="{Binding TotalAmount, StringFormat='Total: ${0:N0}'}" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
+                    <TextBlock Text="{Binding TotalTaxAmount, StringFormat='IVA incluido: ${0:N0}'}" FontSize="12" Foreground="#AEC2E8" Margin="0,0,0,4"/>
+                    <TextBlock Text="{Binding TotalAmount, StringFormat='Total: ${0:N0}'}" FontSize="26" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
 
                     <Button Content="Cobrar" Command="{Binding OpenPaymentCommand}"
-                            Background="White" Foreground="{StaticResource PrimaryDarkBrush}" BorderThickness="0"
-                            Padding="0,14" FontSize="15" FontWeight="Bold" Cursor="Hand"/>
+                            Background="White" Foreground="#1B3270" BorderThickness="0"
+                            Padding="0,14" FontSize="14.5" FontWeight="SemiBold" Cursor="Hand"/>
 
-                    <TextBlock Text="{Binding SuccessMessage}" Foreground="LightGreen" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding SuccessMessage}" Foreground="#8FE0A8" FontWeight="SemiBold"
                                TextWrapping="Wrap" Margin="0,12,0,0"/>
                 </StackPanel>
             </Border>

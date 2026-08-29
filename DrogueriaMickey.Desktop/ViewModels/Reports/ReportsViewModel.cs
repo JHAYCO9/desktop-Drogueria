@@ -21,6 +21,12 @@ namespace DrogueriaMickey.Desktop.ViewModels.Reports
         [ObservableProperty] private string monthlyMonth = DateTime.Today.Month.ToString();
         [ObservableProperty] private MonthlySalesReportDto? monthlyReport;
 
+        // RF-063
+        [ObservableProperty] private ObservableCollection<TopSellingProductDto> topProductsReport = new();
+
+        // RF-064
+        [ObservableProperty] private ObservableCollection<LowRotationProductDto> lowRotationReport = new();
+
         // RF-065
         [ObservableProperty] private ObservableCollection<InventoryGeneralItemDto> inventoryReport = new();
 
@@ -95,6 +101,38 @@ namespace DrogueriaMickey.Desktop.ViewModels.Reports
                 return;
             }
             MonthlyReport = result.Data;
+        }
+
+        [RelayCommand]
+        private async Task GenerateTopProductsReport()
+        {
+            ErrorMessage = string.Empty;
+            IsBusy = true;
+            var result = await _reportService.GetTopSellingProductsAsync();
+            IsBusy = false;
+
+            if (!result.Success || result.Data == null)
+            {
+                ErrorMessage = result.ErrorMessage ?? "No se pudo generar el reporte";
+                return;
+            }
+            TopProductsReport = new ObservableCollection<TopSellingProductDto>(result.Data.Products);
+        }
+
+        [RelayCommand]
+        private async Task GenerateLowRotationReport()
+        {
+            ErrorMessage = string.Empty;
+            IsBusy = true;
+            var result = await _reportService.GetLowRotationProductsAsync();
+            IsBusy = false;
+
+            if (!result.Success || result.Data == null)
+            {
+                ErrorMessage = result.ErrorMessage ?? "No se pudo generar el reporte";
+                return;
+            }
+            LowRotationReport = new ObservableCollection<LowRotationProductDto>(result.Data.Products);
         }
 
         // RF-065

@@ -1,158 +1,222 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Shell.ShellView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
 
-        <!-- Barra superior -->
-        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
-                Background="{StaticResource PrimaryDarkBrush}">
-            <Grid Margin="20,0">
-                <TextBlock Text="Droguería Mickey" Foreground="White" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Username}" Foreground="White" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                    <TextBlock Text="{Binding RoleName, StringFormat=({0})}" Foreground="{StaticResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                    <TextBlock Text="⚠ Sin conexión" Foreground="Orange" VerticalAlignment="Center" Margin="0,0,12,0"
-                               Visibility="{Binding IsOfflineSession, Converter={StaticResource BoolToVisibilityConverter}}"/>
+		<!-- ===================== BARRA SUPERIOR ===================== -->
+		<Grid Grid.Row="0">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="3"/>
+				<RowDefinition Height="64"/>
+			</Grid.RowDefinitions>
 
-<TextBlock Text="{Binding Sync.StatusText}" Foreground="White" VerticalAlignment="Center" Margin="0,0,12,0"/>
-<Button Content="Sincronizar ahora" Command="{Binding SyncNowCommand}" Padding="8,4"
-        Background="Transparent" Foreground="White" BorderThickness="1" BorderBrush="White" Margin="0,0,12,0" Cursor="Hand"/>
+			<!-- Franja de acento -->
+			<Border Grid.Row="0" Background="{StaticResource PrimaryBrush}"/>
 
-<Button Content="Cambiar contraseña" Command="{Binding NavigateToChangePasswordCommand}" Padding="8,4" Background="Transparent" Foreground="White" BorderThickness="0" Margin="0,0,8,0"/>
+			<!-- Navbar con degradado -->
+			<Border Grid.Row="1">
+				<Border.Background>
+					<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+						<GradientStop Color="#1B3270" Offset="0"/>
+						<GradientStop Color="#264A8E" Offset="1"/>
+					</LinearGradientBrush>
+				</Border.Background>
 
-                    <Button Content="Cerrar sesión" Command="{Binding LogoutCommand}" Padding="10,4" Background="Transparent" Foreground="White" BorderThickness="1" BorderBrush="White"/>
-                </StackPanel>
-            </Grid>
-        </Border>
+				<Grid Margin="28,0,20,0">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="24"/>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
 
-<Button Grid.RowSpan="2" Grid.ColumnSpan="2"
-        Content="💬 Bot" Command="{Binding Bot.ToggleCommand}"
-        Background="{StaticResource PrimaryDarkBrush}" Foreground="White" BorderThickness="0"
-        Width="40" Padding="4,16" Cursor="Hand" FontSize="12"
-        HorizontalAlignment="Right" VerticalAlignment="Center"
-        Panel.ZIndex="100">
-    <Button.LayoutTransform>
-        <RotateTransform Angle="-90"/>
-    </Button.LayoutTransform>
-</Button>
+					<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+						<Border Background="White" CornerRadius="6" Padding="6,3" VerticalAlignment="Center">
+							<Image Source="/Assets/logo.png" Height="52" Stretch="Uniform"/>
+						</Border>
+						<TextBlock Text="Servimos no competimos" FontFamily="Georgia" FontStyle="Italic" FontSize="12"
+								   Foreground="#AEC2E8" VerticalAlignment="Center" Margin="12,0,0,0"/>
+					</StackPanel>
 
-<!-- Panel deslizante -->
-<Border x:Name="ChatPanel" Grid.RowSpan="2" Grid.ColumnSpan="2"
-        Width="360" Background="White" HorizontalAlignment="Right"
-        Panel.ZIndex="99" BorderThickness="1,0,0,0" BorderBrush="#D1D5DB">
-    <Border.RenderTransform>
-        <TranslateTransform x:Name="ChatPanelTransform" X="360"/>
-    </Border.RenderTransform>
-    <Border.Effect>
-        <DropShadowEffect Color="Black" Opacity="0.15" BlurRadius="12" ShadowDepth="0"/>
-    </Border.Effect>
+					<!-- Separador -->
+					<Border Grid.Column="1" Width="1" Background="#3A5798" Margin="0,16"/>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+					<!-- Navegación -->
+					<Menu Grid.Column="2" Style="{StaticResource TopNavMenuStyle}" VerticalAlignment="Center">
+						<MenuItem Header="Dashboard" Command="{Binding NavigateToDashboardCommand}" Style="{StaticResource TopNavItemStyle}"/>
+						<MenuItem Header="Ventas" Command="{Binding NavigateToSalesCommand}" Style="{StaticResource TopNavItemStyle}"/>
+						<MenuItem Header="Caja" Command="{Binding NavigateToCashRegisterCommand}" Style="{StaticResource TopNavItemStyle}"/>
 
-        <!-- Encabezado -->
-        <Border Grid.Row="0" Background="{StaticResource PrimaryDarkBrush}" Padding="16">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="🤖" FontSize="20" Margin="0,0,8,0"/>
-                <TextBlock Text="Asistente Droguería Mickey" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
-            </StackPanel>
-        </Border>
+						<MenuItem Header="Inventario" Style="{StaticResource TopNavItemStyle}">
+							<MenuItem Header="Medicamentos" Command="{Binding NavigateToMedicinesCommand}" Style="{StaticResource TopNavSubItemStyle}"/>
+							<MenuItem Header="Alertas de stock" Command="{Binding NavigateToStockAlertsCommand}" Style="{StaticResource TopNavSubItemStyle}"/>
+							<MenuItem Header="Movimientos" Command="{Binding NavigateToMovementsCommand}" Style="{StaticResource TopNavSubItemStyle}"
+                                      Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+							<MenuItem Header="Historial de existencias" Command="{Binding NavigateToStockHistoryCommand}" Style="{StaticResource TopNavSubItemStyle}"
+                                      Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+						</MenuItem>
 
-        <!-- Accesos rápidos -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="12,10,12,0">
-            <Button Content="Ayuda" Command="{Binding Bot.QuickAyudaCommand}"
-                    Background="{StaticResource BackgroundLightBrush}" BorderThickness="0" Padding="10,6" Cursor="Hand" Margin="0,0,8,0"/>
-            <Button Content="Productos bajos" Command="{Binding Bot.QuickProductosBajosCommand}"
-                    Background="{StaticResource BackgroundLightBrush}" BorderThickness="0" Padding="10,6" Cursor="Hand"/>
-        </StackPanel>
+						<MenuItem Header="Administración" Style="{StaticResource TopNavItemStyle}"
+                                  Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
+							<MenuItem Header="Usuarios" Command="{Binding NavigateToUsersCommand}" Style="{StaticResource TopNavSubItemStyle}"/>
+							<MenuItem Header="Historial de ventas" Command="{Binding NavigateToSalesHistoryCommand}" Style="{StaticResource TopNavSubItemStyle}"/>
+							<MenuItem Header="Devoluciones" Command="{Binding NavigateToReturnsHistoryCommand}" Style="{StaticResource TopNavSubItemStyle}"/>
+							<MenuItem Header="Reportes" Command="{Binding NavigateToReportsCommand}" Style="{StaticResource TopNavSubItemStyle}"/>
+							<MenuItem Header="Auditoría" Command="{Binding NavigateToAuditLogCommand}" Style="{StaticResource TopNavSubItemStyle}"/>
+							<Separator/>
+							<MenuItem Header="Configuración" Command="{Binding NavigateToSettingsCommand}" Style="{StaticResource TopNavSubItemStyle}"/>
+						</MenuItem>
+					</Menu>
 
-        <!-- Mensajes -->
-        <ScrollViewer Grid.Row="2" Margin="12" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Bot.Messages}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Margin="0,4" Padding="10,8" CornerRadius="8" MaxWidth="260"
-                                HorizontalAlignment="{Binding IsFromUser, Converter={StaticResource BoolToAlignmentConverter}}">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Background" Value="{StaticResource BackgroundLightBrush}"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsFromUser}" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="13">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding DataContext.IsFromUser, RelativeSource={RelativeSource AncestorType=Border}}" Value="True">
-                                                <Setter Property="Foreground" Value="White"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+					<!-- Usuario y sesión -->
+					<StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+						<StackPanel Margin="0,0,16,0">
+							<TextBlock Text="{Binding Username}" Foreground="White" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+							<TextBlock Text="{Binding RoleName}" Foreground="#AEC2E8" FontSize="10.5" HorizontalAlignment="Right"/>
+						</StackPanel>
+						<Button Content="Contraseña" Command="{Binding NavigateToChangePasswordCommand}"
+                                Background="Transparent" Foreground="#D6E1F5" BorderThickness="0"
+                                FontSize="12" Padding="8,6" Cursor="Hand"/>
+						<Button Content="Salir" Command="{Binding LogoutCommand}"
+                                Background="Transparent" Foreground="#D6E1F5" BorderBrush="#3A5798"
+                                BorderThickness="1" FontSize="12" Padding="12,6" Cursor="Hand" Margin="6,0,0,0"/>
+					</StackPanel>
+				</Grid>
+			</Border>
+		</Grid>
 
-        <!-- Input -->
-        <Border Grid.Row="3" Padding="12" BorderThickness="0,1,0,0" BorderBrush="#E5E7EB">
-            <StackPanel Orientation="Horizontal">
-                <TextBox x:Name="BotInputBox" Text="{Binding Bot.InputText, UpdateSourceTrigger=PropertyChanged}"
-                         Width="240" Padding="8" KeyDown="BotInputBox_KeyDown"/>
-                <Button Content="➤" Command="{Binding Bot.SendCommand}" Width="36" Margin="8,0,0,0"
-                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-            </StackPanel>
-        </Border>
-    </Grid>
-</Border>
+		<!-- ===================== BANNER OFFLINE (RNF-030) ===================== -->
+		<Border Grid.Row="1" Background="{StaticResource ErrorBrush}" Padding="14,8"
+                Visibility="{Binding IsOfflineSession, Converter={StaticResource BoolToVisibilityConverter}}">
+			<TextBlock Foreground="White" FontSize="12" TextWrapping="Wrap">
+				<Run Text="Sesión sin conexión — " FontWeight="SemiBold"/>
+				<Run Text="las ventas, la caja y el inventario requieren internet para completarse."/>
+			</TextBlock>
+		</Border>
 
-        <!-- Menú lateral -->
-        <StackPanel Grid.Row="1" Grid.Column="0" Background="{StaticResource BackgroundLightBrush}">
-            <Button Content="Dashboard" Command="{Binding NavigateToDashboardCommand}" Style="{StaticResource MenuButtonStyle}"/>
-            <Button Content="Ventas" Command="{Binding NavigateToSalesCommand}" Style="{StaticResource MenuButtonStyle}"/>
-            <Button Content="Caja" Command="{Binding NavigateToCashRegisterCommand}" Style="{StaticResource MenuButtonStyle}"/>
-            <Button Content="Devoluciones" Command="{Binding NavigateToReturnsHistoryCommand}" Style="{StaticResource MenuButtonStyle}"
-                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <Button Content="Medicamentos" Command="{Binding NavigateToMedicinesCommand}" Style="{StaticResource MenuButtonStyle}"/>
-            <Button Content="Movimientos" Command="{Binding NavigateToMovementsCommand}"
-                    Style="{StaticResource MenuButtonStyle}"
-                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <Button Content="Historial existencias" Command="{Binding NavigateToStockHistoryCommand}" Style="{StaticResource MenuButtonStyle}"
-                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <Button Content="Alertas" Command="{Binding NavigateToStockAlertsCommand}" Style="{StaticResource MenuButtonStyle}"/>
-            <Button Content="Usuarios" Command="{Binding NavigateToUsersCommand}" Style="{StaticResource MenuButtonStyle}"
-                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <Button Content="Historial de ventas" Command="{Binding NavigateToSalesHistoryCommand}" Style="{StaticResource MenuButtonStyle}"
-                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <Button Content="Reportes" Command="{Binding NavigateToReportsCommand}" Style="{StaticResource MenuButtonStyle}"
-                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <Button Content="Auditoría" Command="{Binding NavigateToAuditLogCommand}" Style="{StaticResource MenuButtonStyle}"
-                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <Button Content="Configuración" Command="{Binding NavigateToSettingsCommand}" Style="{StaticResource MenuButtonStyle}"
-                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-        </StackPanel>
+		<!-- ===================== CONTENIDO ===================== -->
+		<Grid Grid.Row="2">
+			<ContentControl Content="{Binding Navigation.CurrentView}" Margin="24"/>
 
-        <!-- Contenido -->
-        <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding Navigation.CurrentView}" Margin="16"/>
-    </Grid>
+			<!-- Botón flotante del asistente -->
+			<Button Command="{Binding Bot.ToggleCommand}"
+					Width="36" Padding="0,16" Cursor="Hand" Foreground="White" BorderThickness="0"
+					HorizontalAlignment="Right" VerticalAlignment="Center" Panel.ZIndex="100">
+				<Button.Background>
+					<LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+						<GradientStop Color="#1B3270" Offset="0"/>
+						<GradientStop Color="#264A8E" Offset="1"/>
+					</LinearGradientBrush>
+				</Button.Background>
+				<StackPanel HorizontalAlignment="Center">
+					<Path Data="M2,4 L18,4 18,14 8,14 4,18 4,14 2,14 Z" Stroke="White" StrokeThickness="1.3"
+						  Width="16" Height="16" Stretch="Uniform" Margin="0,0,0,12" HorizontalAlignment="Center"/>
+					<TextBlock Text="ASISTENTE" FontSize="11" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center">
+						<TextBlock.LayoutTransform>
+							<RotateTransform Angle="-90"/>
+						</TextBlock.LayoutTransform>
+					</TextBlock>
+				</StackPanel>
+			</Button>
+
+			<!-- Panel deslizante del asistente -->
+			<Border x:Name="ChatPanel" Width="360" Background="White" HorizontalAlignment="Right"
+                    Panel.ZIndex="99" BorderThickness="1,0,0,0" BorderBrush="#DADFE3">
+				<Border.RenderTransform>
+					<TranslateTransform x:Name="ChatPanelTransform" X="360"/>
+				</Border.RenderTransform>
+				<Border.Effect>
+					<DropShadowEffect Color="Black" Opacity="0.15" BlurRadius="12" ShadowDepth="0"/>
+				</Border.Effect>
+
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="*"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+
+					<!-- Encabezado del asistente, con el mismo degradado -->
+					<Border Grid.Row="0" Padding="16">
+						<Border.Background>
+							<LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+								<GradientStop Color="#1B3270" Offset="0"/>
+								<GradientStop Color="#264A8E" Offset="1"/>
+							</LinearGradientBrush>
+						</Border.Background>
+						<StackPanel>
+							<TextBlock Text="Asistente Droguería Mickey" Foreground="White" FontWeight="SemiBold" FontSize="13.5"/>
+							<TextBlock Text="Consultas rápidas y alertas del sistema" Foreground="#AEC2E8" FontSize="10.5" Margin="0,2,0,0"/>
+						</StackPanel>
+					</Border>
+
+					<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="12,10,12,0">
+						<Button Content="Ayuda" Command="{Binding Bot.QuickAyudaCommand}"
+                                Background="{StaticResource BackgroundLightBrush}" BorderThickness="0" Padding="10,6" Cursor="Hand" Margin="0,0,8,0"/>
+						<Button Content="Productos bajos" Command="{Binding Bot.QuickProductosBajosCommand}"
+                                Background="{StaticResource BackgroundLightBrush}" BorderThickness="0" Padding="10,6" Cursor="Hand"/>
+					</StackPanel>
+
+					<ScrollViewer Grid.Row="2" Margin="12" VerticalScrollBarVisibility="Auto">
+						<ItemsControl ItemsSource="{Binding Bot.Messages}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Border Margin="0,4" Padding="10,8" CornerRadius="8" MaxWidth="260"
+                                            HorizontalAlignment="{Binding IsFromUser, Converter={StaticResource BoolToAlignmentConverter}}">
+										<Border.Style>
+											<Style TargetType="Border">
+												<Setter Property="Background" Value="{StaticResource BackgroundLightBrush}"/>
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding IsFromUser}" Value="True">
+														<Setter Property="Background" Value="#264A8E"/>
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</Border.Style>
+										<TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="13">
+											<TextBlock.Style>
+												<Style TargetType="TextBlock">
+													<Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+													<Style.Triggers>
+														<DataTrigger Binding="{Binding IsFromUser}" Value="True">
+															<Setter Property="Foreground" Value="White"/>
+														</DataTrigger>
+													</Style.Triggers>
+												</Style>
+											</TextBlock.Style>
+										</TextBlock>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</ScrollViewer>
+
+					<Border Grid.Row="3" Padding="12" BorderThickness="0,1,0,0" BorderBrush="#E5E7EB">
+						<StackPanel Orientation="Horizontal">
+							<TextBox x:Name="BotInputBox" Text="{Binding Bot.InputText, UpdateSourceTrigger=PropertyChanged}"
+                                     Width="240" Padding="8" KeyDown="BotInputBox_KeyDown"/>
+							<Button Command="{Binding Bot.SendCommand}" Width="36" Margin="8,0,0,0"
+									Foreground="White" BorderThickness="0" Cursor="Hand">
+								<Button.Background>
+									<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">	
+										<GradientStop Color="#1B3270" Offset="0"/>
+										<GradientStop Color="#264A8E" Offset="1"/>
+									</LinearGradientBrush>
+								</Button.Background>
+								<Path Data="M2,9 L16,9 M10,3 L16,9 L10,15" Stroke="White" StrokeThickness="1.6"
+									  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+									  Width="16" Height="16" Stretch="Uniform"/>
+							</Button>
+						</StackPanel>
+					</Border>
+				</Grid>
+			</Border>
+		</Grid>
+	</Grid>
 </UserControl>

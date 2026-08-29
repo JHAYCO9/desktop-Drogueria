@@ -18,30 +18,27 @@
             </Border.Effect>
 
             <StackPanel>
-                <TextBlock Text="Droguería Mickey"
-                           FontSize="22"
-                           FontWeight="Bold"
-                           Foreground="{StaticResource PrimaryDarkBrush}"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,4"/>
+                <Image Source="/Assets/logo.png" Height="130" Stretch="Uniform" Margin="0,0,0,16" HorizontalAlignment="Center"/>
                 <TextBlock Text="Inicia sesión para continuar"
                            FontSize="13"
                            Foreground="{StaticResource TextMutedBrush}"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,28"/>
 
-                <TextBlock Text="Usuario" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                <TextBlock Text="USUARIO" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4"/>
                 <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                          Padding="10,8"
                          FontSize="14"
-                         BorderBrush="{StaticResource PrimaryLightBrush}"
+                         BorderThickness="1"
+                         BorderBrush="{StaticResource BorderBrush}"
                          Margin="0,0,0,16"/>
 
-                <TextBlock Text="Contraseña" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                <TextBlock Text="CONTRASEÑA" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4"/>
                 <PasswordBox x:Name="PasswordBox"
                              Padding="10,8"
                              FontSize="14"
-                             BorderBrush="{StaticResource PrimaryLightBrush}"
+                             BorderThickness="1"
+                             BorderBrush="{StaticResource BorderBrush}"
                              PasswordChanged="PasswordBox_PasswordChanged"
                              Margin="0,0,0,8"/>
 
@@ -54,11 +51,11 @@
 
                 <Button Content="Iniciar sesión"
                         Command="{Binding LoginCommand}"
-                        Height="40"
+                        Height="42"
                         FontSize="14"
                         FontWeight="SemiBold"
                         Foreground="White"
-                        Background="{StaticResource PrimaryBrush}"
+                        Background="{StaticResource PrimaryGradientBrush}"
                         BorderThickness="0"
                         Cursor="Hand"
                         IsEnabled="{Binding IsNotBusy}"/>

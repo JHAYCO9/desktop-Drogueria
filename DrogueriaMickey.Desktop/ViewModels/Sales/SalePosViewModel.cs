@@ -1,7 +1,9 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DrogueriaMickey.Desktop.Services;
+using System.Collections.ObjectModel;   
+using System.DirectoryServices;
+using System.Threading;
 
 namespace DrogueriaMickey.Desktop.ViewModels.Sales
 {
@@ -12,7 +14,11 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
         private readonly IServiceProvider _services;
         private readonly CashDrawerService _drawerService;
         private readonly ReceiptPrintService _printService;
+        private CancellationTokenSource? _searchCts;
 
+        [ObservableProperty] private string nameSearchInput = string.Empty;
+        [ObservableProperty] private ObservableCollection<MedicineDto> searchResults = new();
+        [ObservableProperty] private bool showSearchResults;
         [ObservableProperty] private string? saleId;
         [ObservableProperty] private int saleNumber;
         [ObservableProperty] private ObservableCollection<SaleItemDto> items = new();
@@ -104,11 +110,15 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
             ScannedMedicine = result.Data;
             PendingQuantity = "1";
 
-            // Preselecciona la primera unidad realmente disponible para
-            // este medicamento, en vez de asumir "pastilla" por defecto.
             if (result.Data.SellsByPill) PendingUnit = "pastilla";
             else if (result.Data.SellsBySeal) PendingUnit = "sello";
             else if (result.Data.SellsByBox) PendingUnit = "caja";
+
+            // Fuerza el refresco visual de los RadioButton, incluso si PendingUnit
+            // no cambió de valor respecto al medicamento anterior.
+            OnPropertyChanged(nameof(IsPillSelected));
+            OnPropertyChanged(nameof(IsSealSelected));
+            OnPropertyChanged(nameof(IsBoxSelected));
 
             ShowPendingPanel = true;
         }
@@ -318,6 +328,75 @@ namespace DrogueriaMickey.Desktop.ViewModels.Sales
                 ResetSale();
                 _ = StartSale();
             }
+        }
+
+        partial void OnNameSearchInputChanged(string value)
+        {
+            _searchCts?.Cancel();
+
+            if (string.IsNullOrWhiteSpace(value) || value.Trim().Length < 2)
+            {
+                SearchResults.Clear();
+                ShowSearchResults = false;
+                return;
+            }
+
+            _searchCts = new CancellationTokenSource();
+            _ = DebouncedSearch(value, _searchCts.Token);
+        }
+
+        // Espera 300ms sin más tecleo antes de buscar, para no mandar una
+        // petición al backend por cada letra escrita.
+        private async Task DebouncedSearch(string query, CancellationToken token)
+        {
+            try
+            {
+                await Task.Delay(300, token);
+            }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
+
+            if (token.IsCancellationRequested) return;
+
+            var result = await _medicineService.SearchMedicinesAsync(name: query);
+
+            if (token.IsCancellationRequested) return;
+
+            if (result.Success && result.Data != null)
+            {
+                SearchResults = new ObservableCollection<MedicineDto>(result.Data);
+                ShowSearchResults = SearchResults.Count > 0;
+            }
+            else
+            {
+                SearchResults.Clear();
+                ShowSearchResults = false;
+            }
+        }
+
+        // Al elegir un resultado de la lista, abre el mismo panel de
+        // unidad/cantidad que usa el escaneo por código de barras.
+        [RelayCommand]
+        private void SelectSearchResult(MedicineDto medicine)
+        {
+            ScannedMedicine = medicine;
+            PendingQuantity = "1";
+
+            if (medicine.SellsByPill) PendingUnit = "pastilla";
+            else if (medicine.SellsBySeal) PendingUnit = "sello";
+            else if (medicine.SellsByBox) PendingUnit = "caja";
+
+            OnPropertyChanged(nameof(IsPillSelected));
+            OnPropertyChanged(nameof(IsSealSelected));
+            OnPropertyChanged(nameof(IsBoxSelected));
+
+            ShowPendingPanel = true;
+
+            NameSearchInput = string.Empty;
+            SearchResults.Clear();
+            ShowSearchResults = false;
         }
 
         private void ApplySaleUpdate(SaleDto sale)

@@ -1,6 +1,7 @@
 ﻿<Window x:Class="DrogueriaMickey.Desktop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/Assets/logo.ico"
         Title="Droguería Mickey" Height="600" Width="900">
     <ContentControl x:Name="MainContent"/>
 </Window>

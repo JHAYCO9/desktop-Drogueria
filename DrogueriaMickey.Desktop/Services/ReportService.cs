@@ -26,6 +26,37 @@ namespace DrogueriaMickey.Desktop.Services
         public decimal BestDayTotal { get; set; }
     }
 
+    public class TopSellingProductDto
+    {
+        public string MedicineId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public int QuantitySold { get; set; }
+        public decimal TotalGenerated { get; set; }
+    }
+
+    public class LowRotationProductDto
+    {
+        public string MedicineId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public int QuantitySold { get; set; }
+    }
+
+    public class TopSellingReportDto
+    {
+        public string GeneratedAt { get; set; } = string.Empty;
+        public string From { get; set; } = string.Empty;
+        public string To { get; set; } = string.Empty;
+        public List<TopSellingProductDto> Products { get; set; } = new();
+    }
+
+    public class LowRotationReportDto
+    {
+        public string GeneratedAt { get; set; } = string.Empty;
+        public string From { get; set; } = string.Empty;
+        public string To { get; set; } = string.Empty;
+        public List<LowRotationProductDto> Products { get; set; } = new();
+    }
+
     public class ReportService
     {
         private readonly HttpClient _httpClient;
@@ -81,6 +112,44 @@ namespace DrogueriaMickey.Desktop.Services
             catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
             {
                 return new ApiResult<MonthlySalesReportDto> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
+        }
+
+        // RF-063
+        public async Task<ApiResult<TopSellingReportDto>> GetTopSellingProductsAsync()
+        {
+            try
+            {
+                AttachToken();
+                var response = await _httpClient.GetAsync("reports/top-selling");
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<TopSellingReportDto> { Success = false, ErrorMessage = await ReadError(response) };
+
+                var data = await response.Content.ReadFromJsonAsync<TopSellingReportDto>(JsonOptions.Default);
+                return new ApiResult<TopSellingReportDto> { Success = true, Data = data };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<TopSellingReportDto> { Success = false, ErrorMessage = ConnectionErrorMessage };
+            }
+        }
+
+        // RF-064
+        public async Task<ApiResult<LowRotationReportDto>> GetLowRotationProductsAsync()
+        {
+            try
+            {
+                AttachToken();
+                var response = await _httpClient.GetAsync("reports/low-rotation");
+                if (!response.IsSuccessStatusCode)
+                    return new ApiResult<LowRotationReportDto> { Success = false, ErrorMessage = await ReadError(response) };
+
+                var data = await response.Content.ReadFromJsonAsync<LowRotationReportDto>(JsonOptions.Default);
+                return new ApiResult<LowRotationReportDto> { Success = true, Data = data };
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+            {
+                return new ApiResult<LowRotationReportDto> { Success = false, ErrorMessage = ConnectionErrorMessage };
             }
         }
 

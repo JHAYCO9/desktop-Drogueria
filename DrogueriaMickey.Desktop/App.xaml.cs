@@ -53,7 +53,7 @@ namespace DrogueriaMickey.Desktop
 
             var services = new ServiceCollection();
 
-            services.AddHttpClient<SaleService>();
+            services.AddHttpClient<SaleService>(client => client.Timeout = TimeSpan.FromSeconds(30));
             services.AddSingleton<ReceiptPrintService>();
             services.AddSingleton<CashDrawerService>();
             services.AddTransient<ViewModels.Sales.SalePosViewModel>();
@@ -62,7 +62,7 @@ namespace DrogueriaMickey.Desktop
             services.AddTransient<ViewModels.Inventory.GeneralInventoryViewModel>();
             services.AddTransient<ViewModels.Inventory.StockAlertsViewModel>();
             services.AddTransient<ViewModels.Inventory.BatchesViewModel>();
-            services.AddHttpClient<MedicineService>();
+            services.AddHttpClient<MedicineService>(client => client.Timeout = TimeSpan.FromSeconds(30));
             services.AddTransient<ViewModels.Inventory.MedicinesListViewModel>();
             services.AddTransient<ViewModels.Inventory.MedicineEditViewModel>();
             services.AddTransient<ViewModels.Users.AuditLogViewModel>();
@@ -74,26 +74,26 @@ namespace DrogueriaMickey.Desktop
             services.AddTransient<ViewModels.Sales.SalesHistoryViewModel>();
             services.AddTransient<ViewModels.Auth.LoginViewModel>();
             services.AddTransient<ViewModels.MainViewModel>();
-            services.AddHttpClient<UserService>();
+            services.AddHttpClient<UserService>(client => client.Timeout = TimeSpan.FromSeconds(30));
             services.AddTransient<ViewModels.Users.UsersListViewModel>();
             services.AddTransient<ViewModels.Users.UserEditViewModel>();
             services.AddSingleton<ReceiptPrintService>();
             services.AddTransient<ViewModels.Sales.SaleDetailViewModel>();
-            services.AddHttpClient<CashRegisterService>();
+            services.AddHttpClient<CashRegisterService>(client => client.Timeout = TimeSpan.FromSeconds(30));
             services.AddTransient<ViewModels.CashRegister.CashRegisterViewModel>();
             services.AddTransient<ViewModels.CashRegister.CashMovementsViewModel>();
-            services.AddHttpClient<DashboardService>();
+            services.AddHttpClient<DashboardService>(client => client.Timeout = TimeSpan.FromSeconds(30));
             services.AddTransient<ViewModels.Dashboard.DashboardViewModel>();
             services.AddSingleton<ReporteZPrintService>();
-            services.AddHttpClient<ReturnService>();
+            services.AddHttpClient<ReturnService>(client => client.Timeout = TimeSpan.FromSeconds(30));
             services.AddTransient<ViewModels.Returns.ReturnCreateViewModel>();
             services.AddTransient<ViewModels.Returns.ReturnsHistoryViewModel>();
             services.AddTransient<ViewModels.CashRegister.CashHistoryViewModel>();
-            services.AddHttpClient<ReportService>();
+            services.AddHttpClient<ReportService>(client => client.Timeout = TimeSpan.FromSeconds(30));
             services.AddSingleton<DailyReportPrintService>();
             services.AddTransient<ViewModels.Reports.ReportsViewModel>();
             services.AddSingleton<ReportExportService>();
-            services.AddHttpClient<BotService>();
+            services.AddHttpClient<BotService>(client => client.Timeout = TimeSpan.FromSeconds(30));
             services.AddSingleton<ViewModels.Bot.BotChatViewModel>();
             services.AddHttpClient<SystemSettingsService>();
             services.AddTransient<ViewModels.Settings.SettingsViewModel>();

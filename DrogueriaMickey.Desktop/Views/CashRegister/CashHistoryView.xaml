@@ -1,44 +1,47 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.CashRegister.CashHistoryView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Grid Background="{StaticResource BackgroundLightBrush}" Margin="-16">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Historial de cierres de caja" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+            <TextBlock Grid.Row="0" Text="Historial de cierres de caja" FontSize="20" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
 
-        <Border Grid.Row="1" Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="8" Margin="0,0,0,16">
-            <StackPanel Orientation="Horizontal">
-                <StackPanel Width="140" Margin="0,0,8,0">
-                    <TextBlock Text="Desde" FontSize="11"/>
-                    <TextBox Text="{Binding FromDate, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
+            <Border Grid.Row="1" Background="White" Padding="14" CornerRadius="6" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Margin="0,0,0,16">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Width="140" Margin="0,0,10,0">
+                        <TextBlock Text="DESDE" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
+                        <TextBox Text="{Binding FromDate, UpdateSourceTrigger=PropertyChanged}" Padding="7" Margin="0,4,0,0" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}"/>
+                    </StackPanel>
+                    <StackPanel Width="140" Margin="0,0,12,0">
+                        <TextBlock Text="HASTA" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
+                        <TextBox Text="{Binding ToDate, UpdateSourceTrigger=PropertyChanged}" Padding="7" Margin="0,4,0,0" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}"/>
+                    </StackPanel>
+                    <Button Content="Filtrar" Command="{Binding LoadCommand}"
+                            Background="{StaticResource PrimaryGradientBrush}" Foreground="White" BorderThickness="0"
+                            Padding="16,0" VerticalAlignment="Bottom" Height="32" Cursor="Hand"/>
                 </StackPanel>
-                <StackPanel Width="140" Margin="0,0,8,0">
-                    <TextBlock Text="Hasta" FontSize="11"/>
-                    <TextBox Text="{Binding ToDate, UpdateSourceTrigger=PropertyChanged}" Padding="6"/>
-                </StackPanel>
-                <Button Content="Filtrar" Command="{Binding LoadCommand}"
-                        Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
-                        Padding="16,0" VerticalAlignment="Bottom" Height="30" Cursor="Hand"/>
-            </StackPanel>
-        </Border>
+            </Border>
 
-        <DataGrid Grid.Row="2" ItemsSource="{Binding ClosedRegisters}" AutoGenerateColumns="False" IsReadOnly="True">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Apertura" Binding="{Binding OpenedAt}" Width="150"/>
-                <DataGridTextColumn Header="Cierre" Binding="{Binding ClosedAt}" Width="150"/>
-                <DataGridTextColumn Header="Abrió" Binding="{Binding OpenedByName}" Width="130"/>
-                <DataGridTextColumn Header="Cerró" Binding="{Binding ClosedByName}" Width="130"/>
-                <DataGridTextColumn Header="Esperado" Binding="{Binding ExpectedAmount, StringFormat='${0:N0}'}" Width="100"/>
-                <DataGridTextColumn Header="Contado" Binding="{Binding CountedAmount, StringFormat='${0:N0}'}" Width="100"/>
-                <DataGridTextColumn Header="Diferencia" Binding="{Binding DifferenceAmount, StringFormat='${0:N0}'}" Width="100"/>
-                <DataGridTextColumn Header="Tipo" Binding="{Binding DiscrepancyType}" Width="90"/>
-            </DataGrid.Columns>
-        </DataGrid>
+            <DataGrid Grid.Row="2" ItemsSource="{Binding ClosedRegisters}" AutoGenerateColumns="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="APERTURA" Binding="{Binding OpenedAt}" Width="150"/>
+                    <DataGridTextColumn Header="CIERRE" Binding="{Binding ClosedAt}" Width="150"/>
+                    <DataGridTextColumn Header="ABRIÓ" Binding="{Binding OpenedByName}" Width="130"/>
+                    <DataGridTextColumn Header="CERRÓ" Binding="{Binding ClosedByName}" Width="130"/>
+                    <DataGridTextColumn Header="ESPERADO" Binding="{Binding ExpectedAmount, StringFormat='${0:N0}'}" Width="100"/>
+                    <DataGridTextColumn Header="CONTADO" Binding="{Binding CountedAmount, StringFormat='${0:N0}'}" Width="100"/>
+                    <DataGridTextColumn Header="DIFERENCIA" Binding="{Binding DifferenceAmount, StringFormat='${0:N0}'}" Width="100"/>
+                    <DataGridTextColumn Header="TIPO" Binding="{Binding DiscrepancyType}" Width="90"/>
+                </DataGrid.Columns>
+            </DataGrid>
 
-        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" VerticalAlignment="Top" Margin="0,8,0,0"/>
+            <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" VerticalAlignment="Top" Margin="0,8,0,0"/>
+        </Grid>
     </Grid>
 </UserControl>

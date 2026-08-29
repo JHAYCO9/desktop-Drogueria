@@ -1,42 +1,48 @@
 ﻿<UserControl x:Class="DrogueriaMickey.Desktop.Views.Users.UsersListView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Grid Background="{StaticResource BackgroundLightBrush}" Margin="-16">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-            <TextBlock Text="Usuarios" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-            <Button Content="+ Nuevo usuario" Command="{Binding NewUserCommand}" Margin="20,0,0,0"
-                    Background="{StaticResource PrimaryBrush}" Foreground="White" Padding="12,6" BorderThickness="0" Cursor="Hand"/>
-        </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
+                <TextBlock Text="Usuarios" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                <Button Content="Nuevo usuario" Command="{Binding NewUserCommand}" Margin="20,0,0,0"
+                        Background="{StaticResource PrimaryGradientBrush}" Foreground="White" Padding="14,7" BorderThickness="0" Cursor="Hand"/>
+            </StackPanel>
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Users}" AutoGenerateColumns="False" IsReadOnly="True">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Nombre" Binding="{Binding FullName}" Width="*"/>
-                <DataGridTextColumn Header="Usuario" Binding="{Binding Username}" Width="*"/>
-                <DataGridTextColumn Header="Activo" Binding="{Binding IsActive}" Width="80"/>
-                <DataGridTemplateColumn Header="" Width="90">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="Editar"
-                    Command="{Binding DataContext.EditUserCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                    CommandParameter="{Binding}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="" Width="100">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="{Binding IsActive, Converter={StaticResource ActiveToLabelConverter}}"
-                    Command="{Binding DataContext.ToggleActiveCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                    CommandParameter="{Binding}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+            <DataGrid Grid.Row="1" ItemsSource="{Binding Users}" AutoGenerateColumns="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="NOMBRE" Binding="{Binding FullName}" Width="*"/>
+                    <DataGridTextColumn Header="USUARIO" Binding="{Binding Username}" Width="*"/>
+                    <DataGridTextColumn Header="ACTIVO" Binding="{Binding IsActive}" Width="80"/>
+                    <DataGridTemplateColumn Header="" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Editar"
+                                        Background="Transparent" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}"
+                                        Foreground="{StaticResource TextPrimaryBrush}" Padding="8,4" Cursor="Hand"
+                                        Command="{Binding DataContext.EditUserCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="" Width="90">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding IsActive, Converter={StaticResource ActiveToLabelConverter}}"
+                                        Background="Transparent" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}"
+                                        Foreground="{StaticResource TextPrimaryBrush}" Padding="8,4" Cursor="Hand"
+                                        Command="{Binding DataContext.ToggleActiveCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
     </Grid>
 </UserControl>

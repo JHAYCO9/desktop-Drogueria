@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using DrogueriaMickey.Desktop.Navigation;
 using DrogueriaMickey.Desktop.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http;
+using System.Threading;
 using System.Windows.Controls;
 
 namespace DrogueriaMickey.Desktop.ViewModels
@@ -11,18 +13,22 @@ namespace DrogueriaMickey.Desktop.ViewModels
     {
         private readonly IServiceProvider _services;
         private readonly SessionService _session;
-        private readonly AuthService _authService;                  // <-- CAMBIO 1: nuevo campo
+        private readonly AuthService _authService;
         public NavigationService Navigation { get; }
         public string Username => _session.Username ?? string.Empty;
         public string RoleName => _session.RoleName ?? string.Empty;
         public bool IsAdmin => _session.IsAdministrator;
         public bool IsOfflineSession => _session.IsOfflineSession;
         public event Action? LoggedOut;
-
         private readonly SyncService _syncService;
         public SyncService Sync => _syncService;
-
         public ViewModels.Bot.BotChatViewModel Bot { get; }
+
+        // Mantiene el backend en Render "despierto" — evita que el
+        // servicio se duerma entre ventas y cause timeouts largos o el
+        // error "no se pudo contactar con el servidor" al primer intento
+        // después de un rato de inactividad.
+        private readonly Timer _keepAliveTimer;
 
         public MainViewModel(IServiceProvider services, SessionService session, NavigationService navigation, AuthService authService, SyncService syncService)
         {
@@ -33,6 +39,22 @@ namespace DrogueriaMickey.Desktop.ViewModels
             _syncService = syncService;
             Bot = _services.GetRequiredService<ViewModels.Bot.BotChatViewModel>();
             NavigateToDashboard();
+
+            _keepAliveTimer = new Timer(async _ => await PingHealthAsync(), null, TimeSpan.FromMinutes(4), TimeSpan.FromMinutes(4));
+        }
+
+        private static async Task PingHealthAsync()
+        {
+            try
+            {
+                using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+                await client.GetAsync($"{AppConfig.ApiBaseUrl}health");
+            }
+            catch
+            {
+                // Si falla, no pasa nada — es solo mantenimiento en
+                // segundo plano, no debe interrumpir al usuario.
+            }
         }
 
         [RelayCommand]
@@ -73,7 +95,6 @@ namespace DrogueriaMickey.Desktop.ViewModels
                 System.Windows.MessageBox.Show("No tienes permisos para acceder a este módulo.", "Acceso restringido");
                 return;
             }
-
             var vm = _services.GetRequiredService<ViewModels.Users.UsersListViewModel>();
             var view = new Views.Users.UsersListView { DataContext = vm };
             Navigation.NavigateTo(view);
@@ -112,12 +133,12 @@ namespace DrogueriaMickey.Desktop.ViewModels
         }
 
         [RelayCommand]
-        private async Task Logout()                                  // <-- CAMBIO 3: era "private void", ahora "private async Task"
+        private async Task Logout()
         {
-            await _authService.LogoutAsync();                        // <-- CAMBIO 3: llama al backend primero
+            _keepAliveTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            await _authService.LogoutAsync();
             LoggedOut?.Invoke();
         }
-
 
         [RelayCommand]
         private void NavigateToChangePassword()
@@ -178,6 +199,5 @@ namespace DrogueriaMickey.Desktop.ViewModels
             var view = new Views.Inventory.InventoryMovementsView { DataContext = vm };
             Navigation.NavigateTo(view);
         }
-
     }
 }

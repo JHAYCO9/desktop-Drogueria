@@ -9,6 +9,23 @@
                 <ResourceDictionary Source="Resources/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
+            <SolidColorBrush x:Key="PrimaryBrush" Color="#264A8E"/>
+            <SolidColorBrush x:Key="PrimaryLightBrush" Color="#6E90D6"/>
+            <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#1B3270"/>
+            <SolidColorBrush x:Key="BackgroundLightBrush" Color="#F5F5F2"/>
+            <SolidColorBrush x:Key="ErrorBrush" Color="#A13D2B"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#22282E"/>
+            <SolidColorBrush x:Key="TextMutedBrush" Color="#6B7178"/>
+            <SolidColorBrush x:Key="NavHoverBrush" Color="#2C4A96"/>
+            <SolidColorBrush x:Key="NavDividerBrush" Color="#3A5798"/>
+            <SolidColorBrush x:Key="BorderBrush" Color="#DADFE3"/>
+
+            <!-- Degradado reutilizable — reemplaza los LinearGradientBrush escritos a mano en cada vista -->
+            <LinearGradientBrush x:Key="PrimaryGradientBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#1B3270" Offset="0"/>
+                <GradientStop Color="#264A8E" Offset="1"/>
+            </LinearGradientBrush>
+
             <Style x:Key="UnitChipButton" TargetType="Button">
                 <Setter Property="Padding" Value="16,8"/>
                 <Setter Property="FontSize" Value="13"/>
@@ -38,6 +55,85 @@
                 </Style.Triggers>
             </Style>
 
+            <Style x:Key="TopNavItemStyle" TargetType="MenuItem">
+                <Setter Property="Foreground" Value="#C9D2DB"/>
+                <Setter Property="FontSize" Value="13.5"/>
+                <Setter Property="Padding" Value="16,0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="MenuItem">
+                            <Border x:Name="Bg" Background="Transparent" Padding="{TemplateBinding Padding}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="2"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
+                                        <Path x:Name="Arrow" Data="M0,0 L6,0 3,4 Z" Fill="#7C8894" Margin="6,0,0,0"
+                                  VerticalAlignment="Center" Visibility="Collapsed"/>
+                                    </StackPanel>
+                                    <Border x:Name="Indicator" Grid.Row="1" Background="{StaticResource PrimaryLightBrush}" Height="2" Opacity="0"/>
+                                    <Popup x:Name="PART_Popup" Placement="Bottom" AllowsTransparency="True"
+                               IsOpen="{TemplateBinding IsSubmenuOpen}" Focusable="False">
+                                        <Border Background="White" BorderBrush="#DADFE3" BorderThickness="1" MinWidth="200" Padding="4">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="Black" Opacity="0.14" BlurRadius="14" ShadowDepth="3"/>
+                                            </Border.Effect>
+                                            <StackPanel IsItemsHost="True"/>
+                                        </Border>
+                                    </Popup>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="HasItems" Value="True">
+                                    <Setter TargetName="Arrow" Property="Visibility" Value="Visible"/>
+                                </Trigger>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter TargetName="Bg" Property="Background" Value="{StaticResource NavHoverBrush}"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                                <Trigger Property="IsSubmenuOpen" Value="True">
+                                    <Setter TargetName="Indicator" Property="Opacity" Value="1"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="TopNavSubItemStyle" TargetType="MenuItem">
+                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Height" Value="36"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="MenuItem">
+                            <Border x:Name="Bg" Background="Transparent" Padding="14,0">
+                                <ContentPresenter ContentSource="Header" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter TargetName="Bg" Property="Background" Value="{StaticResource BackgroundLightBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="TopNavMenuStyle" TargetType="Menu">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Menu">
+                            <StackPanel Orientation="Horizontal" IsItemsHost="True" Background="Transparent"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
 
             <Style TargetType="DataGrid">
                 <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
@@ -47,13 +143,7 @@
                 <Setter Property="VerticalGridLinesBrush" Value="#E5E7EB"/>
             </Style>
 
-            <SolidColorBrush x:Key="PrimaryBrush" Color="#3B82F6"/>
-            <SolidColorBrush x:Key="PrimaryLightBrush" Color="#60A5FA"/>
-            <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#1E3A8A"/>
-            <SolidColorBrush x:Key="BackgroundLightBrush" Color="#EFF6FF"/>
-            <SolidColorBrush x:Key="ErrorBrush" Color="#DC2626"/>
-            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1E293B"/>
-            <SolidColorBrush x:Key="TextMutedBrush" Color="#64748B"/>
+
             <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
             <conv:ActiveToLabelConverter x:Key="ActiveToLabelConverter"/>

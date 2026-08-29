@@ -4,55 +4,62 @@
         Title="Finalizar venta" Height="500" Width="420" MinHeight="350" MinWidth="380"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip"
         Background="{StaticResource BackgroundLightBrush}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="24">
-            <TextBlock Text="{Binding TotalAmount, StringFormat='Total a pagar: ${0:N0}'}"
-                       FontSize="24" FontWeight="Bold" Foreground="{StaticResource PrimaryDarkBrush}"
+	<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+		<StackPanel Margin="24">
+			<TextBlock Text="{Binding TotalAmount, StringFormat='Total a pagar: ${0:N0}'}"
+                       FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"
                        HorizontalAlignment="Center" Margin="0,0,0,24"/>
 
-            <!-- Pago en efectivo -->
-            <Border Background="White" Padding="16" CornerRadius="8" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Pago en efectivo" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
+			<!-- Pago en efectivo -->
+			<Border Background="White" Padding="16" CornerRadius="6" BorderThickness="1" BorderBrush="#DADFE3" Margin="0,0,0,16">
+				<StackPanel>
+					<TextBlock Text="Pago en efectivo" FontWeight="SemiBold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,12"/>
 
-                    <TextBlock Text="Valor recibido" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
-                    <TextBox Text="{Binding CashReceivedInput, UpdateSourceTrigger=PropertyChanged}"
-                             FontSize="18" Padding="8" Margin="0,4,0,12"/>
+					<TextBlock Text="VALOR RECIBIDO" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
+					<TextBox Text="{Binding CashReceivedInput, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="17" Padding="8" Margin="0,4,0,12" BorderThickness="1" BorderBrush="#DADFE3"/>
 
-                    <Border Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="6" Margin="0,0,0,12">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Cambio a devolver: " FontSize="16"/>
-                            <TextBlock Text="{Binding ChangeToGive, StringFormat='${0:N0}'}" FontSize="18" FontWeight="Bold"
-                                       Foreground="{StaticResource PrimaryDarkBrush}"/>
-                        </StackPanel>
-                    </Border>
+					<Border Background="{StaticResource BackgroundLightBrush}" Padding="12" CornerRadius="4" Margin="0,0,0,12">
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+							<TextBlock Text="Cambio a devolver: " FontSize="14" Foreground="{StaticResource TextMutedBrush}"/>
+							<TextBlock Text="{Binding ChangeToGive, StringFormat='${0:N0}'}" FontSize="16" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+						</StackPanel>
+					</Border>
 
-                    <Button Content="Confirmar pago en efectivo" Command="{Binding ConfirmCashCommand}"
-                            IsEnabled="{Binding CanConfirmCash}"
-                            Background="{StaticResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+					<Button Content="Confirmar pago en efectivo" Command="{Binding ConfirmCashCommand}"
+                            IsEnabled="{Binding CanConfirmCash}" Foreground="White" BorderThickness="0"
+                            Padding="0,10" Cursor="Hand">
+						<Button.Background>
+							<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+								<GradientStop Color="#1B3270" Offset="0"/>
+								<GradientStop Color="#264A8E" Offset="1"/>
+							</LinearGradientBrush>
+						</Button.Background>
+					</Button>
+				</StackPanel>
+			</Border>
+
+			<!-- Pago por Nequi -->
+			<Border Background="White" Padding="16" CornerRadius="6" BorderThickness="1" BorderBrush="#DADFE3" Margin="0,0,0,16">
+				<StackPanel>
+					<TextBlock Text="Pago mediante Nequi" FontWeight="SemiBold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+
+					<TextBlock Text="VALOR PAGADO" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
+					<TextBox Text="{Binding NequiAmountInput, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="17" Padding="8" Margin="0,4,0,12" BorderThickness="1" BorderBrush="#DADFE3"/>
+
+					<Button Content="Confirmar pago por Nequi" Command="{Binding ConfirmNequiCommand}"
+                            Background="#5B3A8E" Foreground="White" BorderThickness="0"
                             Padding="0,10" Cursor="Hand"/>
-                </StackPanel>
-            </Border>
+				</StackPanel>
+			</Border>
 
-            <!-- Pago por Nequi -->
-            <Border Background="White" Padding="16" CornerRadius="8" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Pago mediante Nequi" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
+			<TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" Margin="0,0,0,12"/>
 
-                    <TextBlock Text="Valor pagado" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
-                    <TextBox Text="{Binding NequiAmountInput, UpdateSourceTrigger=PropertyChanged}"
-                             FontSize="18" Padding="8" Margin="0,4,0,12"/>
-
-                    <Button Content="Confirmar pago por Nequi" Command="{Binding ConfirmNequiCommand}"
-                            Background="#7C3AED" Foreground="White" BorderThickness="0"
-                            Padding="0,10" Cursor="Hand"/>
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" Margin="0,0,0,12"/>
-
-            <Button Content="Cancelar" Command="{Binding CancelDialogCommand}"
-                    Background="Transparent" BorderThickness="1" Padding="0,8" Cursor="Hand"/>
-        </StackPanel>
-    </ScrollViewer>
+			<Button Content="Cancelar" Command="{Binding CancelDialogCommand}"
+                    Background="Transparent" BorderThickness="1" BorderBrush="#DADFE3"
+                    Foreground="{StaticResource TextPrimaryBrush}" Padding="0,8" Cursor="Hand"/>
+		</StackPanel>
+	</ScrollViewer>
 </Window>

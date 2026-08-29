@@ -15,6 +15,16 @@ namespace DrogueriaMickey.Desktop.Services
                 .Build();
         }
 
-        public static string ApiBaseUrl => Configuration["ApiBaseUrl"] ?? "http://localhost:8080/api/v1/";
+        public static string ApiBaseUrl
+        {
+            get
+            {
+                var url = Configuration["ApiBaseUrl"] ?? "https://backend-drogueria.onrender.com/api/v1";
+                // Garantiza la barra final: sin ella, HttpClient reemplaza
+                // el último segmento de la ruta en vez de añadirle la ruta
+                // relativa, causando 404 silenciosos (ej. pierde el "v1").
+                return url.EndsWith("/") ? url : url + "/";
+            }
+        }
     }
 }
